@@ -1,0 +1,581 @@
+{
+  "assessment_id": "sample-outcome-O5-hard-stop-HS07",
+  "workbook_version": "T17-v1.0.1",
+  "answers": {
+    "C01": {
+      "question_id": "C01",
+      "state": null,
+      "value": "AI-assisted pre-screening of job applications",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C02": {
+      "question_id": "C02",
+      "state": "N_A",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C03": {
+      "question_id": "C03",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "N01": {
+      "question_id": "N01",
+      "state": null,
+      "value": "Ranks applications against published job criteria for HR staff review (provider instructions v2.1)",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C04": {
+      "question_id": "C04",
+      "state": null,
+      "value": "Recruitment AI Pilot",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C05": {
+      "question_id": "C05",
+      "state": null,
+      "value": "DEPLOYER",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C06": {
+      "question_id": "C06",
+      "state": null,
+      "value": [
+        "CONTROLLER_DP_TEAM"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "W01": {
+      "question_id": "W01",
+      "state": null,
+      "value": "Support HR staff in shortlisting candidates",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "Q12": {
+      "question_id": "Q12",
+      "state": null,
+      "value": [
+        "EMPLOYMENT_HR"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "FOLLOW": {
+      "question_id": "FOLLOW",
+      "state": "NO",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C10": {
+      "question_id": "C10",
+      "state": null,
+      "value": "Shortlisting support for open positions",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C11": {
+      "question_id": "C11",
+      "state": null,
+      "value": "CVs are parsed, scored against criteria and shown to HR reviewers",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C12": {
+      "question_id": "C12",
+      "state": null,
+      "value": "Used by the HR team of a mid-size company; final decision always by a recruiter",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C03B": {
+      "question_id": "C03B",
+      "state": null,
+      "value": "Provider instructions for use v2.1, section 3",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C38": {
+      "question_id": "C38",
+      "state": null,
+      "value": [
+        "SCORING_RANKING"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C39": {
+      "question_id": "C39",
+      "state": null,
+      "value": "SUPPORT_TO_HUMAN_DECISION",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C40": {
+      "question_id": "C40",
+      "state": null,
+      "value": [
+        "WORKERS_CANDIDATES"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "N02": {
+      "question_id": "N02",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C46": {
+      "question_id": "C46",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C47": {
+      "question_id": "C47",
+      "state": null,
+      "value": [
+        "HUMAN_IN_THE_LOOP",
+        "OVERRIDE_POWER"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C48": {
+      "question_id": "C48",
+      "state": null,
+      "value": "VERIFIED_EFFECTIVE",
+      "detail": "Override audit Q2-2026: 14% of rankings changed by recruiters",
+      "evidence_refs": []
+    },
+    "C50": {
+      "question_id": "C50",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C51": {
+      "question_id": "C51",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C52": {
+      "question_id": "C52",
+      "state": null,
+      "value": [
+        "COMPLAINT_CHANNEL",
+        "HUMAN_REVIEW_ON_REQUEST"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C53": {
+      "question_id": "C53",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C55": {
+      "question_id": "C55",
+      "state": "NO",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C13": {
+      "question_id": "C13",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "Q22": {
+      "question_id": "Q22",
+      "state": null,
+      "value": [
+        "LEGITIMATE_INTEREST"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "Q23": {
+      "question_id": "Q23",
+      "state": null,
+      "value": "Employment relationship: power imbalance mitigated by human decision and opt-out",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C14": {
+      "question_id": "C14",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C15": {
+      "question_id": "C15",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C16": {
+      "question_id": "C16",
+      "state": null,
+      "value": "Legitimate interest assessment documented (LIA-2026-04)",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C17": {
+      "question_id": "C17",
+      "state": null,
+      "value": "Data used only for the application they were submitted for",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C18": {
+      "question_id": "C18",
+      "state": null,
+      "value": [
+        "COMMON_PERSONAL_DATA"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C19": {
+      "question_id": "C19",
+      "state": null,
+      "value": [
+        "DATA_SUBJECT"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C20": {
+      "question_id": "C20",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C21": {
+      "question_id": "C21",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C22": {
+      "question_id": "C22",
+      "state": null,
+      "value": "Only CV fields relevant to the published criteria are processed",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C23": {
+      "question_id": "C23",
+      "state": null,
+      "value": "Deleted 6 months after the end of the selection",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C41": {
+      "question_id": "C41",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C42": {
+      "question_id": "C42",
+      "state": null,
+      "value": [
+        "ACCURACY_CHECK",
+        "REPRESENTATIVENESS"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C43": {
+      "question_id": "C43",
+      "state": null,
+      "value": "VERIFIED_EFFECTIVE",
+      "detail": "Accuracy and representativeness test report TR-2026-03",
+      "evidence_refs": []
+    },
+    "C44": {
+      "question_id": "C44",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C28": {
+      "question_id": "C28",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C29": {
+      "question_id": "C29",
+      "state": null,
+      "value": [
+        "ACCESS",
+        "RECTIFICATION",
+        "OBJECTION"
+      ],
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C31": {
+      "question_id": "C31",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C32": {
+      "question_id": "C32",
+      "state": null,
+      "value": "Manual screening of all CVs was assessed and excluded for volume; keyword filters were less accurate",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C33": {
+      "question_id": "C33",
+      "state": null,
+      "value": "Interference limited to ranking; human decision, contestation and deletion keep impact low",
+      "detail": null,
+      "evidence_refs": []
+    },
+    "Q16": {
+      "question_id": "Q16",
+      "state": "YES",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    },
+    "C34": {
+      "question_id": "C34",
+      "state": null,
+      "value": "MODERATE",
+      "detail": "DPIA-2026-04, section 6",
+      "evidence_refs": []
+    },
+    "C35": {
+      "question_id": "C35",
+      "state": "NO",
+      "value": null,
+      "detail": null,
+      "evidence_refs": []
+    }
+  },
+  "elements": {
+    "QUAL-01.E1": {
+      "element_id": "QUAL-01.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "QUAL-01.E2": {
+      "element_id": "QUAL-01.E2",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "QUAL-01.E3": {
+      "element_id": "QUAL-01.E3",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "QUAL-01.E4": {
+      "element_id": "QUAL-01.E4",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "QUAL-01.E5": {
+      "element_id": "QUAL-01.E5",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "QUAL-01.E6": {
+      "element_id": "QUAL-01.E6",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "LEGAL-01.E1": {
+      "element_id": "LEGAL-01.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "DATA-01.E1": {
+      "element_id": "DATA-01.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "DQ-01.E1": {
+      "element_id": "DQ-01.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "BIAS-01.E1": {
+      "element_id": "BIAS-01.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "TRANS-01.E1": {
+      "element_id": "TRANS-01.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "REM-01.E1": {
+      "element_id": "REM-01.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "PROP-02.E1": {
+      "element_id": "PROP-02.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "PROP-03.E1": {
+      "element_id": "PROP-03.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "PROP-04.E1": {
+      "element_id": "PROP-04.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "PROP-05.E1": {
+      "element_id": "PROP-05.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "PROP-05.E2": {
+      "element_id": "PROP-05.E2",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "PROP-06.E1": {
+      "element_id": "PROP-06.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "PROP-06.E2": {
+      "element_id": "PROP-06.E2",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "PROP-10.E1": {
+      "element_id": "PROP-10.E1",
+      "state": "NOT_MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    },
+    "HS07.E1": {
+      "element_id": "HS07.E1",
+      "state": "MET",
+      "source": "MANUAL",
+      "evidence_refs": [],
+      "rationale": null
+    }
+  },
+  "human_gates": {
+    "HS07": {
+      "rule_id": "HS07",
+      "gate": "COMPLETED",
+      "decision": "Fixture legal determination",
+      "decided_by": "Legal reviewer",
+      "reference": null
+    }
+  },
+  "risks": {
+    "RISK-21": {
+      "risk_id": "RISK-21",
+      "scale": "MEDIUM",
+      "scope": "LIMITED",
+      "reversibility": "REVERSIBLE",
+      "probability": "POSSIBLE",
+      "residual_scale": null,
+      "residual_scope": null,
+      "residual_reversibility": null,
+      "residual_probability": null,
+      "evidence_refs": [],
+      "notes": null
+    }
+  },
+  "mitigations": {},
+  "sep": {
+    "decision": null,
+    "vulnerability": null,
+    "effect": null,
+    "effect_risk_ids": [],
+    "new_risk": null,
+    "new_mitigation": null,
+    "texts": {},
+    "evidence_refs": []
+  },
+  "governance": {
+    "g01_decision": null,
+    "g02_decision_maker": null,
+    "g03_review_date": null,
+    "g04_conditions": null,
+    "g05_reasoning": null
+  }
+}
