@@ -3,6 +3,8 @@
 A DPIA-based workflow for identifying fundamental-rights risks, with role-specific AI Act
 add-ons for providers and deployers.
 
+**Open the tool: https://digcon-project.streamlit.app**
+
 The logic is deterministic and follows the DIGCON T17 decision engine, workbook version
 `T17-v1.0.1`. No answers leave the browser session: there is no database and no external
 API call.
@@ -40,7 +42,7 @@ assessment**.
 Python 3.11 or newer.
 
 ```
-git clone https://github.com/federicapaolucci-hash/dpia-fria-tool.git
+git clone https://github.com/MatteoLColombo/dpia-fria-tool.git
 cd dpia-fria-tool
 python -m venv .venv
 .venv\Scripts\activate          # Windows; on macOS/Linux: source .venv/bin/activate
