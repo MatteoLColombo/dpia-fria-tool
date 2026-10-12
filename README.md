@@ -1,9 +1,7 @@
 # DPIA-based Fundamental Rights Assessment Tool
 
-A research prototype that walks an AI system through a DPIA-based fundamental rights
-assessment, with role-specific AI Act add-ons for providers (Art. 9) and deployers (Art. 27).
-It ends with a recommended outcome, O1 (proceed) to O5 (do not proceed), and an audit trail
-of every rule applied.
+A DPIA-based workflow for identifying fundamental-rights risks, with role-specific AI Act
+add-ons for providers and deployers.
 
 The logic is deterministic and follows the DIGCON T17 decision engine, workbook version
 `T17-v1.0.1`. No answers leave the browser session: there is no database and no external
