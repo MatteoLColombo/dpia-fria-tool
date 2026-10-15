@@ -45,20 +45,43 @@ def element(eid, st, refs, why="because"):
     return {"element_id": eid, "state": st, "evidence_refs": refs, "rationale": why}
 
 
-def test_request_carries_only_the_rule_and_its_inputs():
+CONTEXT = ["C05", "C01", "N01", "W01", "Q12", "C03B"]  # 06_API assessment_context, all open in the baseline
+
+
+def test_request_carries_the_rule_its_inputs_and_the_assessment_context():
     interp, responses = interpreter({"rule_id": "PROP-05", "elements": []})
     state = blank_state("PROP-05")
     interp.evaluate(state, pending_elements(CFG, state, ["PROP-05"]))
     sent = json.loads(responses.kwargs["input"])
     assert sent["rule_id"] == "PROP-05"
     assert [e["id"] for e in sent["evidence"]] == ["C32", "C33"]
+    assert [e["id"] for e in sent["context"]] == CONTEXT
     assert {e["element_id"] for e in sent["elements"]} == {"PROP-05.E1", "PROP-05.E2"}
     assert responses.kwargs["store"] is False
     fmt = responses.kwargs["text"]["format"]
     assert fmt["strict"] is True
     item = fmt["schema"]["properties"]["elements"]["items"]["properties"]
-    assert item["evidence_refs"]["items"]["enum"] == ["C32", "C33"]
+    assert item["evidence_refs"]["items"]["enum"] == CONTEXT + ["C32", "C33"]
     assert item["state"]["enum"] == ["MET", "NOT_MET", "UNCERTAIN"]
+    assert "prompt p2" in interp.provenance
+
+
+def test_prompt_v1_sends_no_context():
+    responses = FakeResponses({"rule_id": "PROP-05", "elements": []})
+    interp = OpenAIInterpreter(CFG, SimpleNamespace(responses=responses), "test-model", prompt_version="p1")
+    state = blank_state("PROP-05")
+    interp.evaluate(state, pending_elements(CFG, state, ["PROP-05"]))
+    assert "context" not in json.loads(responses.kwargs["input"])
+    assert "prompt p1" in interp.provenance
+
+
+def test_a_context_answer_already_among_the_inputs_is_sent_once():
+    interp, responses = interpreter({"rule_id": "PROP-02", "elements": []})  # PROP-02 reads W01 and N01
+    state = blank_state("PROP-02")
+    interp.evaluate(state, pending_elements(CFG, state, ["PROP-02"]))
+    sent = json.loads(responses.kwargs["input"])
+    ids = [e["id"] for e in sent["context"]] + [e["id"] for e in sent["evidence"]]
+    assert len(ids) == len(set(ids)) and {"W01", "N01"} <= {e["id"] for e in sent["evidence"]}
 
 
 def test_valid_output_becomes_api_element_states_with_provenance():

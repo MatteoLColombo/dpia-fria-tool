@@ -42,7 +42,7 @@ from digcon.config import default_config  # noqa: E402
 from digcon.domain.enums import ElementSource, RuleElementState  # noqa: E402
 from digcon.domain.models import AssessmentState, ElementEvaluation  # noqa: E402
 from digcon.engine import RunContext, run_engine  # noqa: E402
-from digcon.interpret.openai_interpreter import OpenAIInterpreter, apply_evaluations, pending_elements  # noqa: E402
+from digcon.interpret.openai_interpreter import PROMPT_VERSION, PROMPTS, OpenAIInterpreter, apply_evaluations, pending_elements  # noqa: E402
 from engine_support import build_state, expectation_failures, load_yaml  # noqa: E402
 
 FIXTURE_FILES = ["outcome.yaml", "hard_stops.yaml", "calibration.yaml", "proportionality.yaml", "process.yaml"]
@@ -169,7 +169,7 @@ def report(rows: list[dict[str, Any]], model: str) -> str:
         lines.append(f"| {r['case']}{authored} | {r['fixture']} | {', '.join(r['rules'])} | {exp} | {act} | {match} | {engine} | **{r['verdict']}** |")
     lines += ["", "✎ = evidence text written for this test (tests/fixtures/api_interpretive.yaml).", "", "## Details", ""]
     for r in rows:
-        lines.append(f"### {r['case']} — {r['verdict']}")
+        lines += [f"### {r['case']} — {r['verdict']}", ""]
         if r.get("note"):
             lines.append(r["note"])
         for f in r.get("engine_failures", []):
@@ -189,6 +189,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry-run", action="store_true", help="no API calls: return the expected states")
     ap.add_argument("--case", action="append", help="run only these case ids")
+    ap.add_argument("--prompt", choices=sorted(PROMPTS), help=f"prompt version (default {PROMPT_VERSION})")
     args = ap.parse_args()
 
     cfg = default_config()
@@ -200,6 +201,7 @@ def main() -> int:
         make = _ExpectedInterpreter
     else:
         key, model, effort = _secret("OPENAI_API_KEY"), _secret("OPENAI_MODEL"), _secret("OPENAI_REASONING_EFFORT")
+        prompt = args.prompt or PROMPT_VERSION
         if not key or not model:
             print("Set OPENAI_API_KEY and OPENAI_MODEL (environment or .streamlit/secrets.toml).", file=sys.stderr)
             return 2
@@ -209,9 +211,9 @@ def main() -> int:
         client = OpenAI(api_key=key, base_url=base_url) if base_url else OpenAI(api_key=key)
 
         def make(_expected):  # the model never sees the expected states
-            return OpenAIInterpreter(cfg, client, model, reasoning_effort=effort)
+            return OpenAIInterpreter(cfg, client, model, reasoning_effort=effort, prompt_version=prompt)
 
-        label = f"{model} (effort {effort})" if effort else model
+        label = (f"{model} (effort {effort})" if effort else model) + f", prompt {prompt}"
 
     rows = [run_case(cfg, c, fixtures, make) for c in cases]
     out_dir = RUNS_DIR / datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")

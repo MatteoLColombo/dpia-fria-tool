@@ -141,9 +141,9 @@ cases:
   - id: BM-DQ-MEASURES
     base: creditlens
     rules: [DQ-01]
-    evidence:
-      C42: [ONGOING_MONITORING]
-      C43: {value: NOT_VERIFIED, detail: "No validation of the training data has been done yet; monitoring is planned after go-live."}
+    evidence:   # v2: was ONGOING_MONITORING + "monitoring planned", which contradicted itself
+      C42: [COMPLETENESS_CHECK]
+      C43: {value: NOT_VERIFIED, detail: "The only check is that required form fields are filled in; no accuracy, representativeness or bias testing of the data has been done."}
     reference: {DQ-01.E1: MET}
     validated: false
 
@@ -182,9 +182,10 @@ cases:
   - id: BM-PROP-SAFEGUARD
     base: creditlens
     rules: [PROP-06]
-    evidence:
+    evidence:   # v2: D05 now agrees with C47/C48 (it still described a strong senior review)
       C47: [AUTOMATION_BIAS_TRAINING]
       C48: {value: VERIFIED_EFFECTIVE, detail: "A one-hour general AI-awareness training; officers cannot change or override the score."}
+      D05: "Officers attend the one-hour AI-awareness training. The score is applied as it is: officers cannot change it."
     reference: {PROP-06.E1: MET, PROP-06.E2: MET}
     validated: false
 

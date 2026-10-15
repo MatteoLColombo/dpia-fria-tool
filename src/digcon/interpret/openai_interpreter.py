@@ -15,6 +15,7 @@ recorded in the call log and the element simply stays not evaluated.
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Protocol
@@ -22,11 +23,11 @@ from typing import Any, Protocol
 from digcon.domain.enums import AnswerKind, ElementSource, RuleElementState, label
 from digcon.domain.models import AssessmentState, ConfigBundle, ElementEvaluation, QuestionSpec, RuleElementSpec
 
-PROMPT_VERSION = "p1"
+PROMPT_VERSION = "p2"  # default; "p1" stays available for comparisons
 SCHEMA_VERSION = "s1"
 STATES = [s.value for s in RuleElementState]
 
-INSTRUCTIONS = """\
+INSTRUCTIONS_P1 = """\
 You assist DIGCON, a deterministic decision engine for fundamental-rights impact assessments of AI systems.
 You do one narrow job: evaluate the rule elements you are given against the evidence you are given.
 
@@ -45,6 +46,46 @@ Rules:
   disproportionate, and do not evaluate anything you were not asked about.
 - rationale: one or two sentences explaining the evaluation, quoting the evidence where possible.
 """
+
+# p2: the assessment context travels with every call (06_API assessment_context), and "inadequate /
+# insufficient / exceeds" statements are judged against that context instead of waiting for an
+# explicit admission. UNCERTAIN stays for evidence that is missing, vague or contradictory.
+INSTRUCTIONS_P2 = """\
+You assist DIGCON, a deterministic decision engine for fundamental-rights impact assessments of AI systems.
+You do one narrow job: evaluate the rule elements you are given against the evidence you are given.
+
+You receive:
+- context: what the assessed system is and does (role, object, intended purpose, scope, documentation).
+- evidence: the answers the rule reads.
+
+For each element return a state:
+- MET: the evidence establishes that the statement in the element is true.
+- NOT_MET: the evidence establishes that the statement in the element is not true.
+- UNCERTAIN: the evidence needed to decide is missing, too vague to judge, or contradicts itself.
+Elements usually describe a deficiency or a condition: MET means the deficiency or condition is present.
+
+How to judge:
+- Many elements say that something is insufficient, inadequate, not coherent, or exceeds what is necessary.
+  Judge them as a careful reviewer would, against the system described in the context: when the evidence
+  clearly shows that measures this kind of system needs are missing, or that the scope plainly exceeds the
+  stated purpose, that establishes MET. You do not need the respondent to admit the deficiency.
+- A bare YES, a label such as "verified" or a claim of adequacy does not outweigh concrete evidence to the
+  contrary written elsewhere in the answers.
+- Do not reach MET from your own assumptions about facts that are not written in the context or evidence.
+
+Rules:
+- An answer that is missing, UNKNOWN, N/A or NOT OWNED is never the same as NO.
+- In evidence_refs cite only the context or evidence IDs supplied that support your evaluation. Never invent IDs.
+  A MET or NOT_MET evaluation must cite at least one evidence or context ID.
+- Do not decide the outcome of the assessment, do not conclude whether the processing is proportionate or
+  disproportionate, and do not evaluate anything you were not asked about.
+- rationale: one or two sentences explaining the evaluation, quoting the evidence where possible.
+"""
+
+PROMPTS = {"p1": INSTRUCTIONS_P1, "p2": INSTRUCTIONS_P2}
+
+# 06_API assessment_context: role; object; intended purpose; scope; system/process context (sent from p2 on).
+CONTEXT_IDS = ["C05", "C01", "N01", "W01", "Q12", "C03B"]
 
 
 class ResponsesClient(Protocol):
@@ -121,8 +162,13 @@ class OpenAIInterpreter:
     """``Interpreter`` (interpret/base.py) backed by the Responses API. ``calls`` keeps one record per call."""
 
     def __init__(self, cfg: ConfigBundle, client: ResponsesClient, model: str, *,
-                 reasoning_effort: str | None = None, max_output_tokens: int = 16000):
+                 reasoning_effort: str | None = None, max_output_tokens: int = 16000,
+                 prompt_version: str = PROMPT_VERSION, max_parallel: int = 4):
         # Reasoning tokens count towards max_output_tokens: keep it well above the size of the JSON.
+        if prompt_version not in PROMPTS:
+            raise ValueError(f"unknown prompt version {prompt_version!r}: one of {sorted(PROMPTS)}")
+        self.prompt_version = prompt_version
+        self.max_parallel = max(1, max_parallel)
         self.cfg = cfg
         self.client = client
         self.model = model
@@ -134,17 +180,17 @@ class OpenAIInterpreter:
     @property
     def provenance(self) -> str:
         effort = f"; effort {self.reasoning_effort}" if self.reasoning_effort else ""
-        return f"openai:{self.model}{effort}; prompt {PROMPT_VERSION}; schema {SCHEMA_VERSION}"
+        return f"openai:{self.model}{effort}; prompt {self.prompt_version}; schema {SCHEMA_VERSION}"
 
     def evaluate(self, state: AssessmentState, elements: list[RuleElementSpec]) -> list[ElementEvaluation]:
         by_rule: dict[str, list[RuleElementSpec]] = {}
         for el in elements:
             by_rule.setdefault(el.id.split(".", 1)[0], []).append(el)
         visible = self._visible(state)
-        out: list[ElementEvaluation] = []
-        for rule_id, els in by_rule.items():
-            out.extend(self._evaluate_rule(state, rule_id, els, visible))
-        return out
+        # One call per rule, several rules at once; results keep the rules' order.
+        with ThreadPoolExecutor(max_workers=self.max_parallel) as pool:
+            results = list(pool.map(lambda item: self._evaluate_rule(state, item[0], item[1], visible), by_rule.items()))
+        return [ev for evs in results for ev in evs]
 
     def _visible(self, state: AssessmentState) -> set[str]:
         """Questions open in this assessment, from the engine's own routing (a closed add-on is never sent)."""
@@ -158,22 +204,26 @@ class OpenAIInterpreter:
     def request_for(self, state: AssessmentState, rule_id: str, elements: list[RuleElementSpec],
                     visible: set[str] | None = None) -> dict[str, Any]:
         rule = self.cfg.rule(rule_id)
-        evidence = []
-        for qid in rule.encoding.inputs:
-            if visible is not None and qid not in visible:
-                continue
+
+        def item(qid: str) -> dict[str, str]:
             q = self.cfg.question(qid)
-            evidence.append({"id": qid, "question": q.text, "answer": _answer_text(self.cfg, q, state.answers.get(qid), self._labels)})
-        return {
-            "rule_id": rule_id,
-            "rule": rule.trigger_text,
-            "elements": [{"element_id": el.id, "statement": el.text} for el in elements],
-            "evidence": evidence,
-        }
+            return {"id": qid, "question": q.text, "answer": _answer_text(self.cfg, q, state.answers.get(qid), self._labels)}
+
+        inputs = [q for q in rule.encoding.inputs if visible is None or q in visible]
+        request: dict[str, Any] = {"rule_id": rule_id, "rule": rule.trigger_text}
+        if self.prompt_version != "p1":
+            request["context"] = [item(q) for q in CONTEXT_IDS if q not in inputs and (visible is None or q in visible)]
+        request["elements"] = [{"element_id": el.id, "statement": el.text} for el in elements]
+        request["evidence"] = [item(q) for q in inputs]
+        return request
+
+    @staticmethod
+    def _citable(request: dict[str, Any]) -> list[str]:
+        return [e["id"] for e in request.get("context", [])] + [e["id"] for e in request["evidence"]]
 
     @staticmethod
     def schema_for(request: dict[str, Any]) -> dict[str, Any]:
-        refs = [e["id"] for e in request["evidence"]]
+        refs = OpenAIInterpreter._citable(request)
         return {
             "type": "object",
             "additionalProperties": False,
@@ -204,7 +254,7 @@ class OpenAIInterpreter:
             rule_id=rule_id,
             model=self.model,
             reasoning_effort=self.reasoning_effort,
-            prompt_version=PROMPT_VERSION,
+            prompt_version=self.prompt_version,
             schema_version=SCHEMA_VERSION,
             timestamp=datetime.now(timezone.utc).isoformat(),
             request=request,
@@ -218,7 +268,7 @@ class OpenAIInterpreter:
             response = self.client.responses.create(
                 **extra,
                 model=self.model,
-                instructions=INSTRUCTIONS,
+                instructions=PROMPTS[self.prompt_version],
                 input=json.dumps(request, ensure_ascii=False, indent=2),
                 text={"format": {"type": "json_schema", "name": "rule_element_evaluation",
                                  "schema": self.schema_for(request), "strict": True}},
@@ -247,7 +297,7 @@ class OpenAIInterpreter:
             record.error = f"wrong or missing rule_id: {payload.get('rule_id') if isinstance(payload, dict) else payload!r}"
             return []
         asked = {e["element_id"] for e in request["elements"]}
-        allowed_refs = {e["id"] for e in request["evidence"]}
+        allowed_refs = set(self._citable(request))
         seen: set[str] = set()
         out = []
         for item in payload.get("elements", []):

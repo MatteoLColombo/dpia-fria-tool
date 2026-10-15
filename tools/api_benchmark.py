@@ -45,7 +45,7 @@ from api_first_test import FIXTURE_FILES, RUNS_DIR, _ExpectedInterpreter, _merge
 from digcon.config import default_config  # noqa: E402
 from digcon.domain.enums import ElementSource, RuleEffect  # noqa: E402
 from digcon.domain.models import AssessmentState  # noqa: E402
-from digcon.interpret.openai_interpreter import OpenAIInterpreter, apply_evaluations, pending_elements  # noqa: E402
+from digcon.interpret.openai_interpreter import PROMPT_VERSION, PROMPTS, OpenAIInterpreter, apply_evaluations, pending_elements  # noqa: E402
 from engine_support import build_state, expectation_failures, load_yaml  # noqa: E402
 
 PENDING_EFFECTS = {RuleEffect.VERIFICATION_REQUEST}
@@ -238,7 +238,7 @@ def report(preps, runs, label: str, repeat: int, price_in: float | None, price_o
             errs = [c["error"] for c in r["calls"] if c.get("error")] + [x for c in r["calls"] for x in c.get("rejected", [])]
             if not off and not errs and r["verdict"] == "PASS":
                 continue
-            lines.append(f"**{p['case']['id']}** run {i}: {r['verdict']}")
+            lines += [f"**{p['case']['id']}** run {i}: {r['verdict']}", ""]
             for e in off:
                 lines.append(f"- `{e}` reference {p['reference'][e]}, API {r['states'][e]}: {r['rationales'].get(e) or '—'}")
             for x in errs:
@@ -255,6 +255,7 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--case", action="append", help="run only these case ids")
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--prompt", choices=sorted(PROMPTS), help=f"prompt version (default {PROMPT_VERSION})")
     ap.add_argument("--price-in", type=float, help="USD per million input tokens")
     ap.add_argument("--price-out", type=float, help="USD per million output tokens")
     args = ap.parse_args()
@@ -267,6 +268,7 @@ def main() -> int:
         label, make = "dry-run", _ExpectedInterpreter
     else:
         key, model, effort = _secret("OPENAI_API_KEY"), _secret("OPENAI_MODEL"), _secret("OPENAI_REASONING_EFFORT")
+        prompt = args.prompt or PROMPT_VERSION
         if not key or not model:
             print("Set OPENAI_API_KEY and OPENAI_MODEL (environment or .streamlit/secrets.toml).", file=sys.stderr)
             return 2
@@ -274,10 +276,10 @@ def main() -> int:
 
         base_url = _secret("OPENAI_BASE_URL")
         client = OpenAI(api_key=key, base_url=base_url) if base_url else OpenAI(api_key=key)
-        label = f"{model} (effort {effort})" if effort else model
+        label = (f"{model} (effort {effort})" if effort else model) + f", prompt {prompt}"
 
         def make(_reference):  # the model never sees the reference
-            return OpenAIInterpreter(cfg, client, model, reasoning_effort=effort)
+            return OpenAIInterpreter(cfg, client, model, reasoning_effort=effort, prompt_version=prompt)
 
     jobs = [(p, i) for p in preps if not p["invalid"] for i in range(args.repeat)]
     runs: dict[str, list] = {}
