@@ -8,6 +8,7 @@ Key and model come from the environment or from .streamlit/secrets.toml (git-ign
     OPENAI_API_KEY = "sk-..."
     OPENAI_MODEL = "<model id>"
     OPENAI_REASONING_EFFORT = "medium"   # optional: low / medium / high ...; omit for the model default
+    OPENAI_BASE_URL = "https://eu.api.openai.com/v1"   # optional: needed for EU data-residency projects
 
 For each case in tests/fixtures/api_interpretive.yaml:
   1. oracle: the engine runs on the fixture with the EXPECTED element states; if the fixture does not
@@ -120,7 +121,8 @@ def run_case(cfg, case: dict[str, Any], fixtures: dict[str, dict], make_interpre
         engine_actual={"outcome": result.outcome.value,
                        "prop": {r: s.value for r, s in result.prop_statuses.items() if r in case["rules"]}},
         engine_failures=failures,
-        verdict="PASS" if not failures else "FAIL",
+        # a call that failed says nothing about the model: never let it count as a pass
+        verdict="ERROR" if any(c.error for c in getattr(interpreter, "calls", [])) else ("PASS" if not failures else "FAIL"),
         rationales={ev.element_id: ev.rationale for ev in evaluations},
         calls=[asdict(c) for c in getattr(interpreter, "calls", [])],
     )
@@ -146,7 +148,8 @@ def report(rows: list[dict[str, Any]], model: str) -> str:
         "",
         f"Model: `{model}` · cases: {len(rows)} · "
         f"PASS {sum(r['verdict'] == 'PASS' for r in rows)} · FAIL {sum(r['verdict'] == 'FAIL' for r in rows)} · "
-        f"INVALID {sum(r['verdict'] == 'INVALID' for r in rows)}",
+        f"INVALID {sum(r['verdict'] == 'INVALID' for r in rows)} · "
+        f"ERROR {sum(r['verdict'] == 'ERROR' for r in rows)} (a call failed: no verdict on the model)",
         "",
         _usage_line(rows),
         "",
@@ -193,7 +196,7 @@ def main() -> int:
     cases = [c for c in load_yaml("api_interpretive.yaml") if not args.case or c["id"] in args.case]
 
     if args.dry_run:
-        model = "dry-run"
+        label = "dry-run"
         make = _ExpectedInterpreter
     else:
         key, model, effort = _secret("OPENAI_API_KEY"), _secret("OPENAI_MODEL"), _secret("OPENAI_REASONING_EFFORT")
@@ -202,17 +205,18 @@ def main() -> int:
             return 2
         from openai import OpenAI
 
-        client = OpenAI(api_key=key)
+        base_url = _secret("OPENAI_BASE_URL")
+        client = OpenAI(api_key=key, base_url=base_url) if base_url else OpenAI(api_key=key)
 
         def make(_expected):  # the model never sees the expected states
             return OpenAIInterpreter(cfg, client, model, reasoning_effort=effort)
 
-        model = f"{model} (effort {effort})" if effort else model
+        label = f"{model} (effort {effort})" if effort else model
 
     rows = [run_case(cfg, c, fixtures, make) for c in cases]
     out_dir = RUNS_DIR / datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "report.md").write_text(report(rows, model), encoding="utf-8")
+    (out_dir / "report.md").write_text(report(rows, label), encoding="utf-8")
     with (out_dir / "calls.jsonl").open("w", encoding="utf-8") as fh:
         for r in rows:
             for c in r.get("calls", []):
