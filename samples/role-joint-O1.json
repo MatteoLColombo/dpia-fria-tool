@@ -544,175 +544,200 @@
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "QUAL-01.E2": {
       "element_id": "QUAL-01.E2",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "QUAL-01.E3": {
       "element_id": "QUAL-01.E3",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "QUAL-01.E4": {
       "element_id": "QUAL-01.E4",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "QUAL-01.E5": {
       "element_id": "QUAL-01.E5",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "QUAL-01.E6": {
       "element_id": "QUAL-01.E6",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "LEGAL-01.E1": {
       "element_id": "LEGAL-01.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "DATA-01.E1": {
       "element_id": "DATA-01.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "DQ-01.E1": {
       "element_id": "DQ-01.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "BIAS-01.E1": {
       "element_id": "BIAS-01.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "TRANS-01.E1": {
       "element_id": "TRANS-01.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "REM-01.E1": {
       "element_id": "REM-01.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "PROP-02.E1": {
       "element_id": "PROP-02.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "PROP-03.E1": {
       "element_id": "PROP-03.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "PROP-04.E1": {
       "element_id": "PROP-04.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "PROP-05.E1": {
       "element_id": "PROP-05.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "PROP-05.E2": {
       "element_id": "PROP-05.E2",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "PROP-06.E1": {
       "element_id": "PROP-06.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "PROP-06.E2": {
       "element_id": "PROP-06.E2",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "PROP-10.E1": {
       "element_id": "PROP-10.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "FRIA-27A.E1": {
       "element_id": "FRIA-27A.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "FRIA-27D.E1": {
       "element_id": "FRIA-27D.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "FRIA-27E.E1": {
       "element_id": "FRIA-27E.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "FRIA-27F.E1": {
       "element_id": "FRIA-27F.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     },
     "FRIA-27I.E1": {
       "element_id": "FRIA-27I.E1",
       "state": "NOT_MET",
       "source": "MANUAL",
       "evidence_refs": [],
-      "rationale": null
+      "rationale": null,
+      "provenance": null
     }
   },
   "human_gates": {

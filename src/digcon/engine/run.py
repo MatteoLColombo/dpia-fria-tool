@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from digcon.domain.enums import (
+    ElementSource,
     EngineFlag,
     HumanGate,
     HumanGateRequirement,
@@ -19,6 +20,20 @@ from .inputs import InvalidAssessment, check_state
 from .result import EngineResult, Finding, HardStopResult, RuleResult, RunContext
 
 _PREFIXES = ("answer:", "question:", "risk:", "mitigation:", "sep:")
+
+
+def _api_evaluations(state: AssessmentState) -> dict[str, dict]:
+    """Element states set by the interpreter, grouped by rule, for the audit trail (06_API: api_evaluation)."""
+    out: dict[str, dict] = {}
+    for eid, ev in state.elements.items():
+        if ev.source is ElementSource.API:
+            out.setdefault(eid.split(".", 1)[0], {})[eid] = {
+                "state": ev.state.value,
+                "evidence_refs": list(ev.evidence_refs),
+                "rationale": ev.rationale,
+                "provenance": ev.provenance,
+            }
+    return out
 
 
 def run_engine(cfg: ConfigBundle, state: AssessmentState, ctx: RunContext) -> EngineResult:
@@ -84,6 +99,7 @@ def run_engine(cfg: ConfigBundle, state: AssessmentState, ctx: RunContext) -> En
         hard_stops=hard_stops,
         risks=ev.risks,
         risk_evidence={rid: ra.evidence_refs for rid, ra in state.risks.items()},
+        api_evaluations=_api_evaluations(state),
         human_decisions={
             rid: f"{g.decision} — {g.decided_by}" + (f" ({g.reference})" if g.reference else "")
             for rid, g in state.human_gates.items()

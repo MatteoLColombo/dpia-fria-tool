@@ -1,0 +1,48 @@
+# First API test (tools/api_first_test.py): interpretive fixtures of 07_TEST_FIXTURES.
+#
+# Each case takes a workbook fixture (patch + expect, unchanged) and sends the listed rules to the
+# interpreter with their MANUAL elements left empty. The interpreter must reach the element states the
+# fixture sets by hand; the engine must then reach the fixture's expected result.
+#
+# The workbook fixtures describe their evidence in prose and set element states directly, so most of
+# them carry no text a model could read. `evidence` is synthetic text WRITTEN FOR THIS TEST to match the
+# fixture's prose (authored: true). It never changes an expected value: the harness first runs the engine
+# with the expected element states over this evidence and refuses the case if the fixture no longer holds.
+# Expected values come only from the workbook; the evidence text is ours and can be revised.
+
+- id: API-PROP-T05
+  fixture: PROP-T05
+  rules: [PROP-05]
+  authored: false   # the fixture itself rewrites C33 as a bare "proportionate, acceptable and necessary"
+
+- id: API-PROP-T04
+  fixture: PROP-T04
+  rules: [PROP-03]
+  authored: true
+  evidence:
+    answers:
+      C32: "Manual screening by HR staff was considered. At the current volume of about 40 applications a month it would give the same shortlisting quality, but it was set aside because the AI tool was already included in the HR software licence."
+
+- id: API-PROP-T02
+  fixture: PROP-T02
+  rules: [PROP-02]
+  authored: true
+  evidence:
+    answers:
+      C10: "Scoring employees' private social-media activity to flag reputational risk to the company"
+
+- id: API-PROP-T06
+  fixture: PROP-T06
+  rules: [PROP-06]
+  authored: true
+  evidence:
+    answers:
+      C48: {value: VERIFIED_EFFECTIVE, detail: "Recruiters are told they can override the ranking. No record of overrides is kept and no test or audit of the override has been carried out."}
+
+# Negative control, not a workbook fixture: the clean test baseline (tests/fixtures/baseline.yaml) must not
+# be flagged. Its reasoning fields are substantive, so every element below is expected NOT_MET.
+- id: API-CONTROL-BASELINE
+  fixture: null
+  rules: [PROP-02, PROP-03, PROP-05]
+  authored: false
+  expect: {outcome: O1}

@@ -166,3 +166,6 @@ cython_debug/
 # Impeccable: review screenshots and decision-round payloads (local only)
 .impeccable/review/
 .impeccable/questions/
+
+# API test runs (reports and per-call logs)
+api-runs/

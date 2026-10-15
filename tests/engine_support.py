@@ -64,3 +64,53 @@ def build_state(patch: dict[str, Any] | None = None) -> AssessmentState:
 
 def run(patch: dict[str, Any] | None = None, ctx: RunContext = CTX):
     return run_engine(default_config(), build_state(patch), ctx)
+
+
+def expectation_failures(r, fx: dict[str, Any]) -> list[str]:
+    """Every way an engine result misses a fixture's ``expect`` block (empty list = PASS).
+
+    Shared by the fixture tests and the API test harness (tools/api_first_test.py).
+    """
+    exp = fx["expect"]
+    out: list[str] = []
+
+    def check(ok: bool, msg: str) -> None:
+        if not ok:
+            out.append(msg)
+
+    if "outcome" in exp:
+        check(r.outcome.value == exp["outcome"], f"outcome {r.outcome.value} != {exp['outcome']}")
+    if "not_outcome" in exp:
+        check(r.outcome.value != exp["not_outcome"], f"outcome must not be {exp['not_outcome']}")
+    for hs, st in exp.get("hs", {}).items():
+        check(r.hard_stops[hs].state.value == st, f"{hs} {r.hard_stops[hs].state.value} != {st}")
+    if "hs_opened" in exp:
+        opened = sorted(h for h, v in r.hard_stops.items() if v.opened)
+        check(opened == sorted(exp["hs_opened"]), f"opened HS {opened} != {sorted(exp['hs_opened'])}")
+    for rid, status in exp.get("prop", {}).items():
+        got = r.prop_statuses.get(rid)
+        check(got is not None and got.value == status, f"{rid} {got.value if got else None} != {status}")
+    for rid, effects in exp.get("prop_effects", {}).items():
+        got = {e.value for e in r.rules[rid].effects}
+        check(got >= set(effects), f"{rid} effects {sorted(got)} lack {sorted(set(effects) - got)}")
+    for rid, levels in exp.get("risk", {}).items():
+        for stage, level in levels.items():
+            got = getattr(r.risks[rid], stage)
+            check((got.value if got else None) == level, f"{rid} {stage} {got.value if got else None} != {level}")
+    for mid, status in exp.get("mitigation_status", {}).items():
+        got = build_state(fx["patch"]).mitigations[mid].status.value
+        check(got == status, f"{mid} {got} != {status}")
+    for flag, value in exp.get("flags", {}).items():
+        got = {f.value: v for f, v in r.flags.items()}[flag]
+        check(got is value, f"flag {flag} {got} != {value}")
+    if "sep_status" in exp:
+        check(r.sep_status is not None and r.sep_status.value == exp["sep_status"], f"SEP status != {exp['sep_status']}")
+    for rid in exp.get("fired", []):
+        check(r.rules[rid].fired, f"{rid} did not fire")
+    if "reassess" in exp:
+        got = sorted(k for k, v in r.risks.items() if v.to_reassess)
+        check(got == exp["reassess"], f"reassess {got} != {exp['reassess']}")
+    if "routing_suspended" in exp:
+        check(r.routing_suspended is exp["routing_suspended"], f"routing_suspended != {exp['routing_suspended']}")
+    check(r.closed, f"audit not closed: {r.audit_defects}")
+    return out

@@ -299,7 +299,8 @@ class ElementSource(_Closed):
     """Where a rule element's state comes from."""
 
     ANSWER = "ANSWER"  # bound to a question answer
-    MANUAL = "MANUAL"  # filled by a person now, by the API later (interpret/ slot)
+    MANUAL = "MANUAL"  # filled by a person
+    API = "API"  # filled by the text interpreter (interpret/ slot); a person can still override it
 
 
 class EngineFlag(_Closed):

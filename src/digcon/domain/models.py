@@ -598,6 +598,7 @@ class ElementEvaluation(_State):
     source: ElementSource = ElementSource.MANUAL
     evidence_refs: list[NonEmpty] = []
     rationale: str | None = None
+    provenance: str | None = None  # source API only: provider, model, prompt and schema versions
 
 
 class HumanGateRecord(_State):

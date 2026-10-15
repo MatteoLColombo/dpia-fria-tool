@@ -10,7 +10,7 @@ from digcon.domain.enums import Outcome, RuleElementState
 from digcon.domain.models import AuditEvent
 from digcon.engine import InvalidAssessment, RunContext, run_engine
 from digcon.engine.calibration import severity
-from engine_support import CTX, build_state, load_yaml, run
+from engine_support import CTX, build_state, expectation_failures, load_yaml, run
 
 FIXTURE_FILES = ["outcome.yaml", "hard_stops.yaml", "calibration.yaml", "proportionality.yaml", "process.yaml"]
 ALL_FIXTURES = [f for name in FIXTURE_FILES for f in load_yaml(name)]
@@ -25,37 +25,8 @@ def test_all_46_workbook_fixtures_are_translated():
 @pytest.mark.parametrize("fx", ENGINE_FIXTURES, ids=lambda f: f["id"])
 def test_workbook_fixture(fx):
     r = run(fx.get("patch"))
-    exp = fx["expect"]
-    if "outcome" in exp:
-        assert r.outcome.value == exp["outcome"], _explain(r)
-    if "not_outcome" in exp:
-        assert r.outcome.value != exp["not_outcome"], _explain(r)
-    for hs, state in exp.get("hs", {}).items():
-        assert r.hard_stops[hs].state.value == state, r.hard_stops[hs]
-    if "hs_opened" in exp:
-        assert sorted(h for h, v in r.hard_stops.items() if v.opened) == sorted(exp["hs_opened"])
-    for rid, status in exp.get("prop", {}).items():
-        assert r.prop_statuses.get(rid) is not None and r.prop_statuses[rid].value == status, r.rules[rid]
-    for rid, effects in exp.get("prop_effects", {}).items():
-        assert {e.value for e in r.rules[rid].effects} >= set(effects), r.rules[rid]
-    for rid, levels in exp.get("risk", {}).items():
-        rr = r.risks[rid]
-        for stage, level in levels.items():
-            got = getattr(rr, stage)
-            assert (got.value if got else None) == level, (rid, stage, rr)
-    for mid, status in exp.get("mitigation_status", {}).items():
-        assert build_state(fx["patch"]).mitigations[mid].status.value == status
-    for flag, value in exp.get("flags", {}).items():
-        assert {f.value: v for f, v in r.flags.items()}[flag] is value
-    if "sep_status" in exp:
-        assert r.sep_status is not None and r.sep_status.value == exp["sep_status"]
-    for rid in exp.get("fired", []):
-        assert r.rules[rid].fired, rid
-    if "reassess" in exp:
-        assert sorted(k for k, v in r.risks.items() if v.to_reassess) == exp["reassess"]
-    if "routing_suspended" in exp:
-        assert r.routing_suspended is exp["routing_suspended"]
-    assert r.closed, r.audit_defects
+    failures = expectation_failures(r, fx)
+    assert not failures, "; ".join(failures) + " | " + _explain(r)
 
 
 def _explain(r) -> str:
