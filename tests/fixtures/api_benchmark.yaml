@@ -1,0 +1,223 @@
+# Benchmark cases for tools/api_benchmark.py (deterministic only vs + API vs reference).
+#
+# NOT workbook fixtures. Every case and every expected element state below was WRITTEN FOR THE
+# BENCHMARK and is a legal-methodological judgement: it must be validated by the DIGCON team
+# (validated: false until then). The workbook's own interpretive fixtures are in api_interpretive.yaml.
+#
+# Each case starts from the test baseline (tests/fixtures/baseline.yaml) with the `creditlens` answers
+# laid over it: a complete, substantive Joint high-risk assessment of a fictional credit-scoring system
+# (the scenario of "DIGCON dati di test.md"). A positive case degrades ONE answer so that exactly one
+# deficiency is present; `reference` gives the element states a careful reviewer would enter.
+# Elements of the listed rules not named in `reference` are expected NOT_MET.
+
+bases:
+  creditlens:
+    C01: "CreditLens, an AI system that scores consumer loan applications for creditworthiness"
+    C02: N_A
+    C03: {state: "NO", detail: "Not social scoring nor any other Art. 5 practice: scores only the applicant's own repayment capacity (legal memo LM-2026-11)"}
+    N01: "Estimates the probability of default of consumer loan applicants (EUR 1,000-30,000) to support credit officers at Banca Fittizia branches; used only by trained credit officers, never fully automatically (Instructions for use v1.3, sections 1-3)"
+    C04: "CreditLens rollout 2027"
+    C05: JOINT
+    C06: [JOINT_TEAM, CONTROLLER_DP_TEAM]
+    W01: "Support consistent and faster creditworthiness assessment of consumer loan applications"
+    Q12: [CREDIT_INSURANCE]
+    FOLLOW: {state: "YES", detail: "Annex III point 5(b) AI Act: creditworthiness evaluation of natural persons"}
+    C10: "Creditworthiness assessment of natural persons applying for consumer loans"
+    C11: "Application data and internal account history are combined into a default-probability score and a reason-code list, shown to the credit officer who decides"
+    C12: "120 branches of a mid-size retail bank; about 4,000 applications per month; credit officers decide, risk office supervises"
+    C03B: "Technical documentation TD-CL-1.3 and Instructions for use v1.3"
+    C38: [SCORING_RANKING, RISK_PREDICTION]
+    C39: SUPPORT_TO_HUMAN_DECISION
+    C40: [CONSUMERS, PROTECTED_OR_VULNERABLE_GROUPS]
+    N02: "YES"
+    C46: "YES"
+    C47: [HUMAN_IN_THE_LOOP, OVERRIDE_POWER, MANDATORY_REVIEW_ADVERSE, AUTOMATION_BIAS_TRAINING, PERIODIC_AUDIT]
+    C48: {value: VERIFIED_EFFECTIVE, detail: "Override audit Q3-2026: officers changed 11% of scores, all with written reasons (report OA-2026-Q3)"}
+    C50: "YES"
+    C51: "YES"
+    C52: [INDIVIDUAL_NOTICE, MEANINGFUL_EXPLANATION, COMPLAINT_CHANNEL, HUMAN_REVIEW_ON_REQUEST, CORRECT_INPUT_DATA, REASONED_RESPONSE]
+    C53: "YES"
+    C55: "YES"
+    C56: "Consumer association asked for plain-language reason codes and worried about applicants with thin credit files (young people, recent migrants)"
+    C63: [HIGH_IMPACT_VULNERABLE_GROUPS]
+    C13: "YES"
+    Q22: [CONTRACT, LEGAL_OBLIGATION]
+    Q23: "Consumer Credit Directive creditworthiness duty; power imbalance between bank and applicant mitigated by human decision, explanation and review on request"
+    C14: "YES"
+    C15: "YES"
+    C16: "Pre-contractual steps at the applicant's request (Art. 6(1)(b) GDPR) and legal obligation to assess creditworthiness (Art. 6(1)(c) GDPR)"
+    C17: "Account history is reused only for credit decisions, compatible with the original banking relationship (compatibility test CT-2026-02)"
+    C18: [COMMON_PERSONAL_DATA, INFERRED_PROFILING, MULTIPLE_SOURCES]
+    C19: [DATA_SUBJECT, ORGANISATION, THIRD_PARTY]
+    C20: "YES"
+    C21: "YES"
+    C22: "Only income, obligations, repayment history and loan request fields; nationality, gender and postcode are excluded from the model"
+    C23: "Scores kept 5 years after the end of the contract (legal retention duty), rejected applications 6 months"
+    C41: "YES"
+    C42: [ACCURACY_CHECK, COMPLETENESS_CHECK, REPRESENTATIVENESS, BIAS_PROXY_ANALYSIS, ONGOING_MONITORING]
+    C43: {value: VERIFIED_EFFECTIVE, detail: "Validation report VR-2026-07: accuracy and bias tests by age group and nationality proxy"}
+    C44: "YES"
+    C28: "YES"
+    C29: [ACCESS, RECTIFICATION, OBJECTION, NO_SOLELY_AUTOMATED_DECISION, HUMAN_INTERVENTION]
+    C31: "YES"
+    C32: "Manual scorecards were assessed and kept as fallback: less consistent and slower; no less intrusive alternative reaches the same accuracy"
+    C33: "Interference limited to a score reviewed by a human; explanation, contestation and correction keep the impact proportionate to the credit-risk purpose"
+    Q16: "YES"
+    C34: {value: MODERATE, detail: "DPIA-2026-09, section 7"}
+    C35: "NO"
+    P01: "YES"
+    P02: "NO"
+    P03: "YES"
+    P04: "YES"
+    P05: "YES"
+    P06: "YES"
+    P07: "YES"
+    P08: "YES"
+    P09: "YES"
+    P10: "YES"
+    D00: {state: "YES", detail: "Art. 27(1)(b): Annex III point 5(b), creditworthiness evaluation"}
+    D01: "Credit officers open the CreditLens score inside the loan workflow, read the reason codes, then approve, reject or escalate; every rejection is reviewed by a senior officer"
+    D02: "From January 2027, 24 months; used for every consumer loan application (about 4,000 a month)"
+    D03: [CONSUMERS, PROTECTED_OR_VULNERABLE_GROUPS]
+    D04: [RISK-21, RISK-08]
+    D05: "Officers trained on automation bias; mandatory senior review of adverse outcomes; monthly override report to the risk office (owner: Head of Retail Credit)"
+    D06: "If a disparity above 5 points appears in monthly monitoring, the model is suspended and manual scorecards are used; complaints go to the Customer Complaints Office within 15 days"
+    D07: "NO"
+    D08: "NO"
+    D09: "DPIA-2026-09, sections 2-5 (description, necessity, data) are cross-referenced"
+    D10: {value: DONE, detail: "Notified to the market surveillance authority on 2026-10-05, ref. MSA-2026-118"}
+
+cases:
+  # --- negative control: the full CreditLens assessment, nothing degraded ---------------------------
+  - id: BM-CONTROL-CREDITLENS
+    base: creditlens
+    rules: [QUAL-01, LEGAL-01, DATA-01, DQ-01, BIAS-01, TRANS-01, REM-01, PROP-02, PROP-03, PROP-04, PROP-05, PROP-06,
+            FRIA-27A, FRIA-27E, FRIA-27F, FRIA-27I]
+    reference: {}
+    validated: false
+
+  # --- one deficiency each ------------------------------------------------------------------------
+  - id: BM-QUAL-C12
+    base: creditlens
+    rules: [QUAL-01]
+    evidence: {C12: "Used internally by the bank."}
+    reference: {QUAL-01.E1: MET}
+    validated: false
+
+  - id: BM-QUAL-C23
+    base: creditlens
+    rules: [QUAL-01]
+    evidence: {C23: "Data are kept as long as needed."}
+    reference: {QUAL-01.E5: MET}
+    validated: false
+
+  - id: BM-LEGAL-CONSENT
+    base: creditlens
+    rules: [LEGAL-01]
+    evidence:
+      Q22: [CONSENT]
+      C16: "Applicants consent by ticking a box on the loan form; without that consent the application cannot be processed."
+    reference: {LEGAL-01.E1: MET}
+    validated: false
+
+  - id: BM-DATA-SOURCES
+    base: creditlens
+    rules: [DATA-01]
+    evidence:
+      C18: [COMMON_PERSONAL_DATA, SPECIAL_CATEGORIES, BEHAVIOURAL, INFERRED_PROFILING, MULTIPLE_SOURCES]
+      C19: [DATA_SUBJECT, THIRD_PARTY, PUBLICLY_AVAILABLE, COMBINED_DATASETS]
+      C22: "Every data source available to the bank or online is combined to improve accuracy; no source has been excluded."
+    reference: {DATA-01.E1: MET}
+    validated: false
+
+  - id: BM-PROP-SCOPE
+    base: creditlens
+    rules: [PROP-04]
+    evidence:
+      C22: "For every applicant the model processes ten years of full transaction history, location data from the mobile banking app and the applicant's public social-media profiles."
+    reference: {PROP-04.E1: MET}
+    validated: false
+
+  - id: BM-DQ-MEASURES
+    base: creditlens
+    rules: [DQ-01]
+    evidence:
+      C42: [ONGOING_MONITORING]
+      C43: {value: NOT_VERIFIED, detail: "No validation of the training data has been done yet; monitoring is planned after go-live."}
+    reference: {DQ-01.E1: MET}
+    validated: false
+
+  - id: BM-BIAS-DISPARITY
+    base: creditlens
+    rules: [BIAS-01]
+    evidence:
+      C44: {state: "YES", detail: "Pre-deployment validation found approval rates 18 points lower for applicants over 60 with the same repayment history; the cause is still under investigation."}
+    reference: {BIAS-01.E1: MET}
+    validated: false
+
+  - id: BM-TRANS-RIGHTS
+    base: creditlens
+    rules: [TRANS-01]
+    evidence:
+      C29: [ACCESS]
+    reference: {TRANS-01.E1: MET}
+    validated: false
+
+  - id: BM-REM-CONTEST
+    base: creditlens
+    rules: [REM-01]
+    evidence:
+      C52: [COMPLAINT_CHANNEL]
+    reference: {REM-01.E1: MET}
+    validated: false
+
+  - id: BM-PROP-NECESSITY
+    base: creditlens
+    rules: [PROP-05]
+    evidence:
+      C32: "The system is necessary for the business."
+    reference: {PROP-05.E1: MET}
+    validated: false
+
+  - id: BM-PROP-SAFEGUARD
+    base: creditlens
+    rules: [PROP-06]
+    evidence:
+      C47: [AUTOMATION_BIAS_TRAINING]
+      C48: {value: VERIFIED_EFFECTIVE, detail: "A one-hour general AI-awareness training; officers cannot change or override the score."}
+    reference: {PROP-06.E1: MET, PROP-06.E2: MET}
+    validated: false
+
+  - id: BM-FRIA-USE
+    base: creditlens
+    rules: [FRIA-27A]
+    evidence:
+      D01: "HR uses the CreditLens score of employees who hold an account at the bank to rank them for promotion."
+    reference: {FRIA-27A.E1: MET}
+    validated: false
+
+  - id: BM-FRIA-OVERSIGHT
+    base: creditlens
+    rules: [FRIA-27E]
+    evidence:
+      D05: "Officers may look at the score if they want to."
+      C47: [HUMAN_ON_THE_LOOP]
+      C48: {value: NOT_VERIFIED, detail: "No oversight procedure has been written yet."}
+    reference: {FRIA-27E.E1: MET}
+    validated: false
+
+  - id: BM-FRIA-MEASURES
+    base: creditlens
+    rules: [FRIA-27F]
+    evidence:
+      D06: "To be defined."
+    reference: {FRIA-27F.E1: MET}
+    validated: false
+
+  - id: BM-FRIA-DPIA-REF
+    base: creditlens
+    rules: [FRIA-27I]
+    evidence:
+      D09: "See the DPIA."
+    reference: {FRIA-27I.E1: MET}
+    validated: false

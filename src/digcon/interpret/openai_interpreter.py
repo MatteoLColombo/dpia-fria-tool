@@ -140,17 +140,28 @@ class OpenAIInterpreter:
         by_rule: dict[str, list[RuleElementSpec]] = {}
         for el in elements:
             by_rule.setdefault(el.id.split(".", 1)[0], []).append(el)
+        visible = self._visible(state)
         out: list[ElementEvaluation] = []
         for rule_id, els in by_rule.items():
-            out.extend(self._evaluate_rule(state, rule_id, els))
+            out.extend(self._evaluate_rule(state, rule_id, els, visible))
         return out
+
+    def _visible(self, state: AssessmentState) -> set[str]:
+        """Questions open in this assessment, from the engine's own routing (a closed add-on is never sent)."""
+        from digcon.engine import RunContext, run_engine
+
+        result = run_engine(self.cfg, state, RunContext(run_id="interpret", timestamp=datetime.now(timezone.utc)))
+        return set(result.visible_questions)
 
     # -- one rule ------------------------------------------------------------------------
 
-    def request_for(self, state: AssessmentState, rule_id: str, elements: list[RuleElementSpec]) -> dict[str, Any]:
+    def request_for(self, state: AssessmentState, rule_id: str, elements: list[RuleElementSpec],
+                    visible: set[str] | None = None) -> dict[str, Any]:
         rule = self.cfg.rule(rule_id)
         evidence = []
         for qid in rule.encoding.inputs:
+            if visible is not None and qid not in visible:
+                continue
             q = self.cfg.question(qid)
             evidence.append({"id": qid, "question": q.text, "answer": _answer_text(self.cfg, q, state.answers.get(qid), self._labels)})
         return {
@@ -186,8 +197,9 @@ class OpenAIInterpreter:
             },
         }
 
-    def _evaluate_rule(self, state: AssessmentState, rule_id: str, elements: list[RuleElementSpec]) -> list[ElementEvaluation]:
-        request = self.request_for(state, rule_id, elements)
+    def _evaluate_rule(self, state: AssessmentState, rule_id: str, elements: list[RuleElementSpec],
+                       visible: set[str] | None = None) -> list[ElementEvaluation]:
+        request = self.request_for(state, rule_id, elements, visible)
         record = CallRecord(
             rule_id=rule_id,
             model=self.model,
@@ -199,7 +211,7 @@ class OpenAIInterpreter:
         )
         self.calls.append(record)
         if not request["evidence"]:
-            record.error = "rule has no encoded inputs: nothing to evaluate against"
+            record.error = "none of the rule's inputs is open in this assessment: nothing to evaluate against"
             return []
         extra = {"reasoning": {"effort": self.reasoning_effort}} if self.reasoning_effort else {}
         try:

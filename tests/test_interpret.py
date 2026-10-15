@@ -132,3 +132,11 @@ def test_api_values_reach_the_audit_trail():
     assert "answer:C33" in ev.evidence_refs
     assert r.closed
     assert run(patch).prop_statuses["PROP-05"] == r.prop_statuses["PROP-05"]  # same state, same engine result
+
+
+def test_questions_of_a_closed_add_on_are_not_sent():
+    interp, responses = interpreter({"rule_id": "PROP-06", "elements": []})
+    state = blank_state("PROP-06")  # baseline: not high-risk, so the deployer add-on (D05, D06) is closed
+    interp.evaluate(state, pending_elements(CFG, state, ["PROP-06"]))
+    sent = {e["id"] for e in json.loads(responses.kwargs["input"])["evidence"]}
+    assert "C48" in sent and not sent & {"D05", "D06"}
