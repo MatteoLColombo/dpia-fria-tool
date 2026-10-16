@@ -9,7 +9,7 @@ import streamlit as st
 from digcon.domain.enums import AnswerKind, ControlEffectiveness, NotificationStatus, RiskLevel, Role, RuleElementState, label
 from digcon.domain.models import ConfigBundle, QuestionSpec, RuleElementSpec
 
-from . import state
+from . import api_mode, state
 from .labels import QUESTION_NOTES
 from .style import RULE, question_title
 
@@ -149,6 +149,8 @@ def label_of(code: str, names: dict[str, str]) -> str:
 
 def _sync_element(eid: str) -> None:
     v = st.session_state.get(f"w.{eid}")
+    api_mode.note_person_change(eid)
+    # a value set here is the person's: it replaces an API value and the API never overwrites it
     state.set_or_remove("elements", eid, None if v is None else {"element_id": eid, "state": v})
 
 
@@ -166,6 +168,10 @@ def element(spec: RuleElementSpec, effective: str | None = None) -> None:
         format_func=lambda c: c.replace("_", " "), on_change=_sync_element, args=(spec.id,),
         help="Not evaluated until you choose. Click the chosen state again to clear it.",
     )
+    if stored and stored.get("source") == "API":
+        cited = ", ".join(r.removeprefix("answer:") for r in stored.get("evidence_refs", [])) or "none"
+        st.markdown(f":blue-badge[:material/smart_toy: Set by API] :gray[{stored.get('rationale') or ''}]")
+        st.caption(f"Cited: {cited}. Choose a state yourself to replace it.")
 
 
 def _sync_gate(rule_id: str) -> None:

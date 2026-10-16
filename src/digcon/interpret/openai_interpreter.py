@@ -14,6 +14,7 @@ recorded in the call log and the element simply stays not evaluated.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
@@ -192,6 +193,16 @@ class OpenAIInterpreter:
             results = list(pool.map(lambda item: self._evaluate_rule(state, item[0], item[1], visible), by_rule.items()))
         return [ev for evs in results for ev in evs]
 
+    @staticmethod
+    def digest(request: dict[str, Any]) -> str:
+        """Fingerprint of what the model reads for a rule (rule, context, answers), not of which elements are asked:
+        an answer that changes changes the digest; a person filling one element of the rule does not."""
+        read = {k: v for k, v in request.items() if k != "elements"}
+        return hashlib.sha256(json.dumps(read, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:12]
+
+    def visible_questions(self, state: AssessmentState) -> set[str]:
+        return self._visible(state)
+
     def _visible(self, state: AssessmentState) -> set[str]:
         """Questions open in this assessment, from the engine's own routing (a closed add-on is never sent)."""
         from digcon.engine import RunContext, run_engine
@@ -321,7 +332,7 @@ class OpenAIInterpreter:
                 source=ElementSource.API,
                 evidence_refs=[f"answer:{r}" for r in refs],
                 rationale=(item.get("rationale") or "").strip() or None,
-                provenance=self.provenance,
+                provenance=f"{self.provenance}; input {self.digest(request)}",
             )
             record.applied.append(ev.model_dump(mode="json"))
             out.append(ev)

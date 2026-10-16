@@ -17,7 +17,7 @@ from digcon.config import default_config
 from digcon.domain.enums import Phase
 from digcon.engine import EngineResult, InvalidAssessment, RunContext, run_engine
 
-from . import bridge, state
+from . import api_mode, bridge, state
 from .labels import (
     APP_CAPTION,
     APP_TITLE,
@@ -144,6 +144,8 @@ def _menu(cfg, steps: dict[str, list], res: EngineResult | None, marks: dict[str
     with st.sidebar:
         st.markdown('<p class="digcon-brand">DIGCON</p><p class="digcon-brand-sub">Fundamental Rights Assessment</p>',
                     unsafe_allow_html=True)
+        if api_mode.active():
+            st.markdown(":blue-badge[:material/smart_toy: API mode]")
         with st.container(border=True):
             if res is not None:
                 st.markdown(f":{OUTCOME_COLOUR[res.outcome]}-badge[{OUTCOME_TITLES[res.outcome]}]")
@@ -225,6 +227,9 @@ def main() -> None:
         _restore(cfg, stored)
     if st.session_state.pop(RESTORED, False):
         st.toast("Answers restored from this browser's autosave.", icon=":material/history:")
+    api_mode.activate_from_link()
+    if st.session_state.get(NAV) in (RULES_TITLE, RESULT_TITLE) and api_mode.refresh(cfg):
+        st.rerun()  # the next run autosaves the values the API just set
     try:
         res = run_engine(
             cfg,
@@ -252,6 +257,8 @@ def main() -> None:
     st.header(current)
     if current == steps[step][0][0]:
         st.markdown(STEP_TEXT[step])
+    if current in (RULES_TITLE, RESULT_TITLE):
+        api_mode.notice()
     if res is not None or current == START_TITLE:
         sections[current](cfg, res)
     _pager(titles, current)
