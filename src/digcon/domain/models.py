@@ -706,6 +706,19 @@ class ResidualRiskReview(_State):
     reviewed_fingerprint: str = ""
 
 
+class AlternativesReview(_State):
+    schema_version: Literal[1] = 1
+    existence: Literal["YES", "NO", "NOT_ASSESSED"] = "NOT_ASSESSED"
+    comparison: str = ""
+    evidence_refs: list[NonEmpty] = []
+    reviewer: str = ""
+    review_date: str = ""
+    review_reason: str = ""
+    decision: Literal["PENDING", "SUFFICIENT", "MISSING_EVIDENCE", "UNJUSTIFIED_EXCLUSION"] = "PENDING"
+    reviewed_fingerprint: str = ""
+    history: list[dict] = []
+
+
 class AssessmentState(_State):
     assessment_id: NonEmpty
     workbook_version: NonEmpty
@@ -719,6 +732,7 @@ class AssessmentState(_State):
     governance: GovernanceRecord = GovernanceRecord()
     action_plan: dict[RuleId, ActionPlanItem] = {}
     residual_reviews: dict[RiskId, ResidualRiskReview] = {}
+    alternatives_review: AlternativesReview | None = None
 
     @model_validator(mode="after")
     def _keys_match(self) -> AssessmentState:

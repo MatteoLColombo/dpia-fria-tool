@@ -128,9 +128,18 @@ def render(cfg, result):
                 with st.expander('Information used in this finding'):
                     for qid in qids:
                         q = cfg.question(qid); a = state.store()['answers'].get(qid, {})
-                        st.markdown('**' + q.text + '**')
-                        st.write(a.get('value') or a.get('state') or 'Not answered')
-                        if a.get('detail'): st.write(a['detail'])
+                        if qid == 'C31' and state.store().get('alternatives_review') is not None:
+                            from ..alternatives import EXISTENCE, DECISIONS
+                            from digcon.domain.alternatives import decision
+                            alt = state.store()['alternatives_review']
+                            st.markdown('**Alternatives and justification of the choice**')
+                            st.write(EXISTENCE[alt['existence']])
+                            st.write(alt['comparison'] or 'Comparison not yet documented')
+                            st.caption(DECISIONS[decision(state.assessment())])
+                        else:
+                            st.markdown('**' + q.text + '**')
+                            st.write(a.get('value') or a.get('state') or 'Not answered')
+                            if a.get('detail'): st.write(a['detail'])
                         st.button('Review this answer', key=f'plan.source.{rid}.{qid}', on_click=open_source, args=(rid, qid, PHASE_TITLES[q.phase]))
                     if not qids: st.caption('This finding requires review of the assessment evidence and judgement.')
             if stage == STAGES[1]:

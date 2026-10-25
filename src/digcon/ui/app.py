@@ -13,7 +13,7 @@ from datetime import datetime, timezone
 
 import streamlit as st
 
-from digcon.config import default_config
+from digcon.config import load_config
 from digcon.domain.enums import Phase
 from digcon.engine import EngineResult, InvalidAssessment, RunContext, run_engine
 
@@ -51,9 +51,9 @@ RESTORED = "restored_from_browser"
 SIDEBAR_WIDTH = 368  # px: section labels and their status on one line
 
 
-@st.cache_resource
 def _config():
-    return default_config()
+    # Rebuild typed conditions after code updates; cached old model instances break dispatch.
+    return load_config()
 
 
 def _phase_page(phase: Phase):
@@ -103,7 +103,7 @@ def _progress(cfg, res: EngineResult | None) -> tuple[dict[str, str], dict[str, 
         if locked:
             marks[title] = ":gray-badge[:material/lock: Closed]"
             continue
-        done = sum(1 for q in ids if q in answers)
+        done = sum(1 for q in ids if q in answers or (q == "C31" and state.store().get("alternatives_review") is not None))
         marks[title] = ":green-badge[:material/check: Complete]" if done == len(ids) else f":gray-badge[{done} / {len(ids)}]"
         step = STEP_CORE if phase in (Phase.INTRO, Phase.WHAT, Phase.HOW, Phase.WHY) else STEP_ADDONS
         a, v = counts[step]

@@ -124,6 +124,8 @@ def _todo(cfg: ConfigBundle, current, interp) -> list[tuple[str, list, str]]:
     visible = interp.visible_questions(current)
     out = []
     for rule in cfg.rules.rules:
+        if rule.id == "PROP-03" and current.alternatives_review is not None:
+            continue  # the new alternatives determination belongs to the human reviewer
         if rule.family == "HS":
             continue  # hard-stop elements stay human-only until benchmarked
         els = [e for e in pending_elements(cfg, current, [rule.id]) if e.id not in dismissed]

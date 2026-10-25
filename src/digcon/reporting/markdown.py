@@ -280,4 +280,13 @@ def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> st
     add("")
     add(FOOTER)
     add("")
+    if state.alternatives_review is not None:
+        from digcon.domain.alternatives import decision
+        record = state.alternatives_review
+        out += ['## Alternatives and necessity review', '',
+                'The original C31 answer, if present, is retained above with its original meaning.', '',
+                f'Effective review status: {decision(state)}', '',
+                *_table(['Field', 'Recorded information'], [[k, v] for k, v in record.model_dump(mode='json').items()
+                                                           if k not in ('history', 'reviewed_fingerprint')]),
+                'Previous determinations: ' + str(len(record.history)), '']
     return "\n".join(out)

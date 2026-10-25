@@ -121,6 +121,8 @@ def findings(result, saved):
 def fingerprint(state, rule_id):
     """Conservative invalidation: changes in assessment evidence or this action require review."""
     data = state.model_dump(mode='json')
+    if data.get('alternatives_review') is None:
+        data.pop('alternatives_review', None)  # preserve signatures on legacy records
     item = data.pop('action_plan', {}).get(rule_id, {})
     for key in ['reviewed_fingerprint', 'decision', 'review_history']:
         item.pop(key, None)

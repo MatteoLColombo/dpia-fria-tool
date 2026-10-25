@@ -76,6 +76,11 @@ UNRESOLVED_NOTE = {
 
 
 def question(cfg: ConfigBundle, q: QuestionSpec) -> None:
+    if q.id == 'C31':
+        from .alternatives import render
+        render()
+        st.markdown(RULE, unsafe_allow_html=True)
+        return
     st.markdown(question_title(QUESTION_TITLES.get(q.id, q.text), ""), unsafe_allow_html=True)
     with st.expander("Technical references"):
         st.caption(f"Question: {q.id} · Internal rules: {q.rule_refs_text}")
@@ -157,6 +162,16 @@ def _sync_element(eid: str) -> None:
 
 def element(spec: RuleElementSpec, effective: str | None = None) -> None:
     """Element of a rule: MET / NOT_MET / UNCERTAIN, or not evaluated. ANSWER elements are read-only."""
+    if spec.id == 'PROP-03.E1' and state.store().get('alternatives_review') is not None:
+        from .alternatives import DECISIONS
+        from digcon.domain.alternatives import decision
+        from digcon.domain.enums import Phase
+        from .labels import PHASE_TITLES
+        from .finding_navigation import open_source
+        st.write('Alternatives review: ' + DECISIONS.get(decision(state.assessment()), 'Review needed'))
+        st.button('Review alternatives and justification', key='alternatives.from_review',
+                  on_click=open_source, args=('PROP-03', 'C31', PHASE_TITLES[Phase.WHY]))
+        return
     text = element_question(spec.id, workbook_text(spec.id, "text", spec.text))
     with st.expander("Technical condition and source"):
         st.caption(f"{spec.id}: {spec.text}")

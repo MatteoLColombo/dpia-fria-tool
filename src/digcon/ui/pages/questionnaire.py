@@ -60,7 +60,7 @@ def render(cfg: ConfigBundle, result: EngineResult, phase: Phase) -> None:
             return
 
     shown = [q for q in cfg.questions.questions if q.phase is phase and q.id in visible]
-    answered = sum(1 for q in shown if q.id in state.store()["answers"])
+    answered = sum(1 for q in shown if q.id in state.store()["answers"] or (q.id == "C31" and state.store().get("alternatives_review") is not None))
     st.progress(answered / len(shown) if shown else 0.0, text=f"{answered} of {len(shown)} questions answered")
     st.caption("UNKNOWN, N/A and NOT OWNED are answers too: never treated as NO.")
     target = st.session_state.get('finding_source')

@@ -155,6 +155,9 @@ class Evaluator:
     def answer_status(self, qid: str) -> AnswerStatus:
         if not self.visible(qid):
             return AnswerStatus.HIDDEN
+        if qid == 'C31' and self.state.alternatives_review is not None:
+            from digcon.domain.alternatives import decision
+            return AnswerStatus.UNRESOLVED if decision(self.state) == 'MISSING_EVIDENCE' else AnswerStatus.PROVIDED
         ans = self.state.answers.get(qid)
         if ans is None:
             return AnswerStatus.MISSING
@@ -165,6 +168,9 @@ class Evaluator:
         return AnswerStatus.PROVIDED
 
     def answer_values(self, qid: str) -> set[str]:
+        if qid == 'C31' and self.state.alternatives_review is not None:
+            from digcon.domain.alternatives import decision
+            return {'UNKNOWN'} if decision(self.state) == 'MISSING_EVIDENCE' else {'YES'}
         ans = self.state.answers.get(qid)
         if ans is None or not self.visible(qid):
             return set()
@@ -175,6 +181,8 @@ class Evaluator:
         return {ans.value} if ans.value else set()
 
     def _note_answer(self, qid: str) -> None:
+        if qid == 'C31' and self.state.alternatives_review is not None:
+            self._note('alternatives_review:C31', extra=self.state.alternatives_review.evidence_refs)
         status = self.answer_status(qid)
         if status is AnswerStatus.HIDDEN:
             return
@@ -188,6 +196,11 @@ class Evaluator:
 
     def element_state(self, eid: str) -> RuleElementState | PropStatus | None:
         """Effective state; None = not evaluated yet. ANSWER elements are read from their question."""
+        if eid == 'PROP-03.E1' and self.state.alternatives_review is not None:
+            from digcon.domain.alternatives import decision
+            self._note('alternatives_review:C31', extra=self.state.alternatives_review.evidence_refs)
+            return {'SUFFICIENT': RuleElementState.NOT_MET,
+                    'UNJUSTIFIED_EXCLUSION': RuleElementState.MET}.get(decision(self.state), RuleElementState.UNCERTAIN)
         rule_id, spec = self.element_specs[eid]
         if spec.source is ElementSource.ANSWER:
             b = spec.binding
@@ -248,6 +261,10 @@ class Evaluator:
 
     def remediation_resolved(self, rule_id: str) -> bool:
         """AS-016 / AS-030: closed only by a linked, activated, VERIFIED_EFFECTIVE mitigation."""
+        if rule_id == 'PROP-03' and self.state.alternatives_review is not None:
+            from digcon.domain.alternatives import decision
+            if decision(self.state) == 'UNJUSTIFIED_EXCLUSION':
+                return False  # revise the substantive determination; a plan approval is insufficient
         from digcon.domain.action_plan import approved
         if not approved(self.state, rule_id):
             return False

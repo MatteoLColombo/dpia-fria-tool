@@ -179,7 +179,11 @@ def _findings(ev: Evaluator, cfg: ConfigBundle, rules: dict[str, RuleResult], ha
             continue
         if (r.gap and RuleEffect.EVIDENCE_GAP in r.gap_effects) or (r.fired and RuleEffect.EVIDENCE_GAP in r.effects):
             ids = questions(r, AnswerStatus.MISSING, AnswerStatus.UNRESOLVED) or open_elements(r) or r.input_ids
-            gaps.append(Finding(rule_id=rid, message="Evidence gap: material information missing or unknown", ids=ids))
+            message = "Evidence gap: material information missing or unknown"
+            if rid == 'PROP-03' and ev.state.alternatives_review is not None:
+                message = "Alternatives review incomplete: document the comparison and reasons, then record a current human determination"
+                ids = ['C31']
+            gaps.append(Finding(rule_id=rid, message=message, ids=ids))
         if r.review or RuleEffect.VERIFICATION_REQUEST in r.effects or RuleEffect.VERIFICATION_REQUEST in r.gap_effects:
             ids = questions(r, AnswerStatus.NOT_APPLICABLE) + open_elements(r)
             reviews.append(Finding(rule_id=rid, message="To be verified (does not block the outcome)", ids=ids))
