@@ -20,6 +20,10 @@ STORE = "assessment"
 NAV = "nav"  # title of the section shown
 SAVED = "saved_fingerprint"  # fingerprint of the assessment as last downloaded or loaded
 WIDGET_PREFIX = "w."
+# Session keys that describe the assessment on screen, not the browser session: dropped whenever a
+# whole assessment is loaded or discarded. Other modules add their own (api_mode does).
+PER_ASSESSMENT_KEYS: set[str] = {"plan_focus", "finding_source"}
+LANDING = "land_after_load"  # set by "Load this assessment": the app picks where the loaded assessment opens
 
 
 def empty_store(cfg: ConfigBundle) -> dict[str, Any]:
@@ -51,7 +55,7 @@ def replace(data: dict[str, Any], *, from_file: bool = True) -> None:
     ``from_file``: the data matches a file the user holds (upload, or a fresh start), so it counts as saved.
     """
     st.session_state[STORE] = AssessmentState.model_validate(data).model_dump(mode="json")
-    for key in ("plan_focus", "finding_source"):
+    for key in PER_ASSESSMENT_KEYS:
         st.session_state.pop(key, None)
     for key in [k for k in st.session_state if str(k).startswith(WIDGET_PREFIX)]:
         del st.session_state[key]

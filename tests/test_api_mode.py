@@ -206,3 +206,55 @@ def test_a_cleared_value_stays_cleared_after_the_file_is_loaded_again(fake):
     fresh.query_params["api"] = CODE
     fresh.run()
     assert eid not in fresh.session_state[ui_state.STORE]["elements"]
+
+
+def test_discard_then_reload_the_same_file_calls_the_api_again(fake):
+    """A load or a discard starts a new assessment: what the API saw in the previous one does not carry over."""
+    from digcon.ui.labels import START_TITLE
+
+    at = app(SECRETS, CODE)
+    first = fake.calls
+    assert first > 0 and api_elements(at)
+    at.sidebar.button(key=f"nav.{START_TITLE}").click().run()
+    next(b for b in at.button if b.label == "Discard answers and start over").click().run()
+    assert not at.exception, [e.message for e in at.exception]
+    assert not api_elements(at)
+    # Load the same assessment again (what "Load this assessment" stores), then open 3.3.
+    data = build_state().model_dump(mode="json")
+    data["elements"] = {}
+    at.session_state[ui_state.STORE] = data
+    at.sidebar.button(key=f"nav.{RULES_TITLE}").click().run()
+    assert not at.exception, [e.message for e in at.exception]
+    assert fake.calls > first and api_elements(at)
+
+
+def test_unreviewed_api_values_are_announced_until_a_person_reviews_them(fake):
+    """AS-040: pending API values do not count; 3.3 and 4.1 say how many wait, 4.1 links to 3.3."""
+    from digcon.ui.labels import RESULT_TITLE
+
+    at = app(SECRETS, CODE)
+    waiting = sorted(api_elements(at))
+    assert f"{len(waiting)} API suggestion" in page_text(at)
+    assert not [b for b in at.button if b.key == "api.review"]  # already on 3.3
+    at.button(key=f"api.ok.{waiting[0]}").click().run()
+    assert f"{len(waiting) - 1} API suggestion" in page_text(at)
+
+    at.sidebar.button(key=f"nav.{RESULT_TITLE}").click().run()
+    assert f"{len(waiting) - 1} API suggestion" in page_text(at)
+    at.button(key="api.review").click().run()
+    assert at.session_state[NAV] == RULES_TITLE
+
+    for eid in waiting[1:]:
+        at.button(key=f"api.ok.{eid}").click().run()
+    assert "API suggestion" not in page_text(at)
+
+
+def test_a_saved_file_with_unreviewed_api_values_is_announced_without_the_link(fake):
+    at = app(SECRETS, CODE)
+    saved = at.session_state[ui_state.STORE]
+    plain = AppTest.from_file(APP, default_timeout=60)  # student link: no API mode
+    plain.session_state[ui_state.STORE] = saved
+    plain.session_state[NAV] = RULES_TITLE
+    plain.run()
+    assert not plain.exception
+    assert f"{len(api_elements(at))} API suggestion" in page_text(plain)

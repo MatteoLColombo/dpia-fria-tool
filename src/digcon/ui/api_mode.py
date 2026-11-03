@@ -30,6 +30,9 @@ ACTIVE = "api_mode"
 DISMISSED = "api_dismissed"  # element ids a person has set or cleared: the API leaves them alone
 TRIED = "api_tried"  # rule id -> input digest already sent in this session (no retry loops)
 STATUS = "api_status"  # last run summary, shown in 3.3 / 4.1
+# What the API saw, and what a person cleared, belongs to one assessment: a load or a discard starts
+# over, otherwise reloading the same file would never be sent again. ACTIVE (the private link) stays.
+state.PER_ASSESSMENT_KEYS.update({DISMISSED, TRIED, STATUS})
 DEFAULT_DAILY_CALLS = 300
 
 
@@ -211,8 +214,23 @@ def note_person_change(element_id: str) -> None:
     st.session_state.setdefault(DISMISSED, set()).add(element_id)
 
 
+def pending_review() -> list[str]:
+    """Checks holding an API value that no person has confirmed or changed yet (they do not count: AS-040)."""
+    return sorted(e for e, v in state.store()["elements"].items() if v.get("source") == ElementSource.API.value)
+
+
 def notice() -> None:
-    """On 3.3 / 4.1, a short note only when the API could not do its job (the tool otherwise looks as usual)."""
+    """On 3.3 / 4.1: how many API suggestions await a person, and a short note when the API could not do its job."""
+    from .labels import RULES_TITLE
+
+    waiting = pending_review()
+    if waiting:  # shown on any link: a saved file can carry unreviewed suggestions
+        n = len(waiting)
+        st.markdown(f":orange-badge[{n} API suggestion{'s' if n != 1 else ''} to review] "
+                    ":gray[They do not count in the outcome until you confirm or change them.]")
+        if st.session_state.get(state.NAV) != RULES_TITLE:
+            st.button("Review them in 3.3", key="api.review", icon=":material/fact_check:",
+                      on_click=state.go, args=(RULES_TITLE,))
     if not active():
         return
     status = st.session_state.get(STATUS) or {}

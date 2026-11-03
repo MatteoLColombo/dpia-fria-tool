@@ -88,9 +88,12 @@ class _Trace:
 
 
 class Evaluator:
-    def __init__(self, cfg: ConfigBundle, state: AssessmentState) -> None:
+    def __init__(self, cfg: ConfigBundle, state: AssessmentState, *, count_pending_api: bool = False) -> None:
         self.cfg = cfg
         self.state = state
+        # An API value no person has confirmed or changed yet counts as not evaluated (AS-040), except
+        # in the API benchmark, which measures what the model's values would do to the outcome.
+        self.count_pending_api = count_pending_api
         self.questions = {q.id: q for q in cfg.questions.questions}
         self.rule_specs = {r.id: r for r in cfg.rules.rules}
         self.element_specs = {e.id: (r.id, e) for r in cfg.rules.rules for e in r.encoding.elements}
@@ -214,6 +217,8 @@ class Evaluator:
                 st = RuleElementState.UNCERTAIN
         else:
             ev = self.state.elements.get(eid)
+            if ev is not None and ev.source is ElementSource.API and not self.count_pending_api:
+                ev = None  # awaiting a person: "to verify", like a check nobody has filled in
             st = ev.state if ev else None
             if ev:
                 self._note(f"element:{eid}", extra=ev.evidence_refs)

@@ -66,7 +66,9 @@ def _merge(patch: dict[str, Any] | None, extra: dict[str, Any] | None) -> dict[s
 
 
 def _run(cfg, state: AssessmentState):
-    return run_engine(cfg, state, RunContext(run_id="api-first-test", timestamp=datetime.now(timezone.utc)))
+    # The benchmark measures what the model's values do to the outcome, before any person reviews them.
+    return run_engine(cfg, state, RunContext(run_id="api-first-test", timestamp=datetime.now(timezone.utc)),
+                      count_pending_api=True)
 
 
 def _states(state: AssessmentState, element_ids: list[str]) -> dict[str, str]:

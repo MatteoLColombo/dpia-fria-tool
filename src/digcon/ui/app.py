@@ -110,26 +110,42 @@ def step_of(title: str) -> str:
 _go = state.go
 
 
+def _phase_progress(cfg, res: EngineResult) -> list[tuple[Phase, int, int, bool]]:
+    """(phase, answered, visible, locked) for each questionnaire section, in protocol order."""
+    answers = state.store()["answers"]
+    visible = set(res.visible_questions)
+    out = []
+    for phase in Phase:
+        ids = [q.id for q in cfg.questions.questions if q.phase is phase and q.id in visible]
+        locked = (phase is Phase.PROVIDER and not res.provider_module) or (phase is Phase.DEPLOYER and not ids)
+        done = sum(1 for q in ids if q in answers or (q == "C31" and state.store().get("alternatives_review") is not None))
+        out.append((phase, done, len(ids), locked))
+    return out
+
+
+def _landing(cfg, res: EngineResult) -> str:
+    """Where a loaded assessment opens: the first section with unanswered questions, else the findings."""
+    return next(
+        (PHASE_TITLES[phase] for phase, done, total, locked in _phase_progress(cfg, res) if not locked and done < total),
+        RESULT_TITLE,
+    )
+
+
 def _progress(cfg, res: EngineResult | None) -> tuple[dict[str, str], dict[str, tuple[int, int]]]:
     """Per-section status mark (markdown) and per-step (answered, visible) question counts."""
     if res is None:
         return {}, {}
-    answers = state.store()["answers"]
-    visible = set(res.visible_questions)
     marks: dict[str, str] = {}
     counts: dict[str, tuple[int, int]] = {STEP_CORE: (0, 0), STEP_ADDONS: (0, 0)}
-    for phase in Phase:
-        ids = [q.id for q in cfg.questions.questions if q.phase is phase and q.id in visible]
+    for phase, done, total, locked in _phase_progress(cfg, res):
         title = PHASE_TITLES[phase]
-        locked = (phase is Phase.PROVIDER and not res.provider_module) or (phase is Phase.DEPLOYER and not ids)
         if locked:
             marks[title] = ":gray-badge[:material/lock: Closed]"
             continue
-        done = sum(1 for q in ids if q in answers or (q == "C31" and state.store().get("alternatives_review") is not None))
-        marks[title] = ":green-badge[:material/check: Complete]" if done == len(ids) else f":gray-badge[{done} / {len(ids)}]"
+        marks[title] = ":green-badge[:material/check: Complete]" if done == total else f":gray-badge[{done} / {total}]"
         step = STEP_CORE if phase in (Phase.INTRO, Phase.WHAT, Phase.HOW, Phase.WHY) else STEP_ADDONS
         a, v = counts[step]
-        counts[step] = (a + done, v + len(ids))
+        counts[step] = (a + done, v + total)
     store = state.store()
     marks[START_TITLE] = ":gray-badge[New]" if state.save_status(cfg) == "empty" else ":blue-badge[Started]"
     marks[ROUTING_TITLE] = (
@@ -265,6 +281,9 @@ def main() -> None:
             + "; ".join(exc.errors)
             + "). Load a different saved file or start a new assessment in section 1.0."
         )
+    if st.session_state.pop(state.LANDING, False) and res is not None:
+        st.session_state[NAV] = _landing(cfg, res)
+        st.rerun()  # the landing section may be 4.1, where API mode runs before the engine
 
     steps = _steps()
     sections = {title: render for items in steps.values() for title, render in items}

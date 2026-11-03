@@ -7,7 +7,7 @@ import pytest
 
 from digcon.config import default_config
 from digcon.domain.enums import ElementSource, RuleElementState
-from digcon.domain.models import ElementEvaluation
+from digcon.domain.models import AssessmentState, ElementEvaluation
 from digcon.interpret.openai_interpreter import OpenAIInterpreter, apply_evaluations, pending_elements
 from engine_support import build_state, run
 
@@ -138,23 +138,41 @@ def test_a_person_s_value_is_never_sent_nor_overwritten():
     assert apply_evaluations(state, [api]).elements["PROP-05.E1"].state is RuleElementState.NOT_MET
 
 
-def test_api_values_reach_the_audit_trail():
-    patch = {"elements": {"PROP-05.E2": "MET"}}
-    state = build_state(patch)
-    data = state.model_dump(mode="json")
-    data["elements"]["PROP-05.E2"] = {"element_id": "PROP-05.E2", "state": "MET", "source": "API",
-                                      "evidence_refs": ["answer:C33"], "rationale": "assertive", "provenance": "openai:m"}
+def test_api_values_reach_the_audit_trail_and_count_only_once_a_person_confirms_them():
+    """AS-040: an API value awaiting a person is recorded but treated as not evaluated; confirmed, it counts."""
     from datetime import datetime, timezone
 
     from digcon.engine import RunContext, run_engine
 
-    r = run_engine(CFG, type(state).model_validate(data), RunContext(run_id="t", timestamp=datetime.now(timezone.utc)))
-    ev = next(e for e in r.audit_trail if e.rule_id == "PROP-05")
+    def engine(data, **kw):
+        return run_engine(CFG, AssessmentState.model_validate(data), RunContext(run_id="t", timestamp=datetime.now(timezone.utc)), **kw)
+
+    suggestion = {"element_id": "PROP-05.E2", "state": "MET", "evidence_refs": ["answer:C33"], "rationale": "assertive",
+                  "provenance": "openai:m"}
+    data = build_state().model_dump(mode="json")
+    data["elements"]["PROP-05.E2"] = {**suggestion, "source": "API"}
+    data["api_suggestions"]["PROP-05.E2"] = suggestion
+
+    pending = engine(data)
+    ev = next(e for e in pending.audit_trail if e.rule_id == "PROP-05")
     assert ev.api_evaluation["PROP-05.E2"]["state"] == "MET"
     assert ev.api_evaluation["PROP-05.E2"]["provenance"] == "openai:m"
-    assert "answer:C33" in ev.evidence_refs
-    assert r.closed
-    assert run(patch).prop_statuses["PROP-05"] == r.prop_statuses["PROP-05"]  # same state, same engine result
+    assert ev.api_evaluation["PROP-05.E2"]["human_review"] == "PENDING"
+    assert pending.closed
+    unevaluated = build_state().model_dump(mode="json")
+    del unevaluated["elements"]["PROP-05.E2"]
+    assert pending.prop_statuses["PROP-05"] == engine(unevaluated).prop_statuses["PROP-05"]  # as if nobody filled it
+    assert "PROP-05.E2" in {i for f in pending.verification_requests for i in f.ids}  # listed as to verify
+
+    confirmed = {**data, "elements": {**data["elements"], "PROP-05.E2": {"element_id": "PROP-05.E2", "state": "MET"}}}
+    r = engine(confirmed)
+    ev = next(e for e in r.audit_trail if e.rule_id == "PROP-05")
+    assert ev.api_evaluation["PROP-05.E2"]["human_review"] == "CONFIRMED"
+    assert "answer:C33" in engine(data, count_pending_api=True).rules["PROP-05"].evidence_refs
+    manual = run({"elements": {"PROP-05.E2": "MET"}}).prop_statuses["PROP-05"]
+    assert r.prop_statuses["PROP-05"] == manual  # confirmed: same as a person's value
+    assert engine(data, count_pending_api=True).prop_statuses["PROP-05"] == manual  # benchmark mode
+    assert pending.prop_statuses["PROP-05"] != manual
 
 
 def test_questions_of_a_closed_add_on_are_not_sent():

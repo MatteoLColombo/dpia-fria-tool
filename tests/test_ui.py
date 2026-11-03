@@ -286,3 +286,24 @@ def test_config_cache_rebuilds_when_code_or_config_changes(tmp_path, monkeypatch
     target.write_text("ab", encoding="utf-8")
     os.utime(target, ns=(1, 1))
     assert ui_app._code_version() != before
+
+
+def _loaded(patch) -> AppTest:
+    """What "Load this assessment" leaves behind: the new store and the landing flag."""
+    at = AppTest.from_file(APP, default_timeout=TIMEOUT)
+    at.session_state[ui_state.STORE] = build_state(patch).model_dump(mode="json")
+    at.session_state[ui_state.LANDING] = True
+    return at.run()
+
+
+def test_a_half_done_assessment_opens_where_the_answers_stop():
+    at = _loaded({"remove_answers": ["C38", "C39"]})  # two HOW questions left unanswered
+    no_errors(at)
+    assert at.header[0].value == PHASE_TITLES[Phase.HOW]
+    assert ui_state.LANDING not in at.session_state
+
+
+def test_a_complete_assessment_opens_on_the_findings():
+    at = _loaded({})
+    no_errors(at)
+    assert at.header[0].value == RESULT_TITLE

@@ -194,7 +194,8 @@ def element(spec: RuleElementSpec, effective: str | None = None) -> None:
     if stored and stored.get("source") == "API":
         cited = ", ".join(r.removeprefix("answer:") for r in stored.get("evidence_refs", [])) or "none"
         st.markdown(f":blue-badge[Set by API] :gray[{stored.get('rationale') or ''}]")
-        st.caption(f"Cited: {cited}. Confirm it, clear it, or choose another state to replace it.")
+        st.caption(f"Cited: {cited}. It does not count in the outcome until you confirm it, choose another "
+                   "state to replace it, or clear it.")
         with st.container(horizontal=True, gap="small"):
             st.button("Confirm", key=f"api.ok.{spec.id}", icon=":material/check:", on_click=api_mode.confirm,
                       args=(spec.id,), help="Keep this value as your own.")

@@ -59,8 +59,7 @@ def render(cfg: ConfigBundle, result: EngineResult) -> None:
                                             help="Replaces the answers in this session."):
             try:
                 state.replace(state.parse_upload(upload.getvalue()))
-                from ..labels import MITIGATION_TITLE
-                state.go(MITIGATION_TITLE)
+                st.session_state[state.LANDING] = True  # first unanswered section, or the findings if complete
                 st.rerun()
             except ValueError as exc:
                 st.error("This file could not be loaded. Choose a JSON file saved from this tool with "

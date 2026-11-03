@@ -43,11 +43,14 @@ def _api_evaluations(state: AssessmentState) -> dict[str, dict]:
     return out
 
 
-def run_engine(cfg: ConfigBundle, state: AssessmentState, ctx: RunContext) -> EngineResult:
+def run_engine(
+    cfg: ConfigBundle, state: AssessmentState, ctx: RunContext, *, count_pending_api: bool = False
+) -> EngineResult:
+    """``count_pending_api``: let unconfirmed API values count (API benchmark only; the app never does)."""
     errors = check_state(cfg, state)
     if errors:
         raise InvalidAssessment(errors)
-    ev = Evaluator(cfg, state)
+    ev = Evaluator(cfg, state, count_pending_api=count_pending_api)
     families = {r.id: r.family for r in cfg.rules.rules}
 
     # Outcome: OUT rules in precedence order O5 → O4 → O3 → O2 → O1; the first that fires wins.
