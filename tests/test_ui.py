@@ -270,3 +270,19 @@ def test_guided_plan_preserves_work_across_stages_and_json_export():
     assert item.owner == 'Operations team'
     assert item.evidence_refs == ['procedure:v2']
     assert item.decision != 'RESOLVED'
+
+
+def test_config_cache_rebuilds_when_code_or_config_changes(tmp_path, monkeypatch):
+    """Fast reruns, yet never config objects built by the previous code after a deploy."""
+    import os
+
+    from digcon.ui import app as ui_app
+
+    (tmp_path / "rules.yaml").write_text("a", encoding="utf-8")
+    monkeypatch.setattr(ui_app, "_SOURCES", (tmp_path,))
+    before = ui_app._code_version()
+    assert ui_app._code_version() == before  # nothing changed: same cache key
+    target = tmp_path / "rules.yaml"
+    target.write_text("ab", encoding="utf-8")
+    os.utime(target, ns=(1, 1))
+    assert ui_app._code_version() != before

@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 
 import streamlit as st
 
-from digcon.config import load_config
+from digcon.config import DEFAULT_CONFIG_DIR, load_config
+from digcon.domain.models import ConfigBundle
 from digcon.domain.enums import Phase
 from digcon.engine import EngineResult, InvalidAssessment, RunContext, run_engine
 
@@ -51,9 +53,29 @@ RESTORED = "restored_from_browser"
 SIDEBAR_WIDTH = 368  # px: section labels and their status on one line
 
 
-def _config():
-    # Rebuild typed conditions after code updates; cached old model instances break dispatch.
+_SOURCES = (Path(__file__).resolve().parents[1], DEFAULT_CONFIG_DIR)  # src/digcon and config/
+
+
+def _code_version() -> tuple[tuple[str, int, int], ...]:
+    """Modification time and size of every code and config file: changes on each deploy."""
+    return tuple(
+        (str(p), s.st_mtime_ns, s.st_size)
+        for root in _SOURCES
+        for p in sorted(root.rglob("*"))
+        if p.suffix in (".py", ".yaml", "") and p.is_file() and (s := p.stat())
+    )
+
+
+@st.cache_resource(max_entries=1)
+def _cached_config(version: tuple) -> ConfigBundle:  # no leading underscore: Streamlit must hash it
     return load_config()
+
+
+def _config() -> ConfigBundle:
+    # Keyed on the code version: after an update the cache rebuilds, so it never hands out
+    # model instances from the old code (which broke condition dispatch), yet a normal rerun
+    # reuses the bundle instead of re-reading every YAML file (~1 s per click).
+    return _cached_config(_code_version())
 
 
 def _phase_page(phase: Phase):

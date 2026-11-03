@@ -48,8 +48,8 @@ def render():
     record = state.store().get('alternatives_review')
     legacy = state.store()['answers'].get('C31')
     if record is None and legacy:
-        st.info('This assessment contains an earlier answer to “Have less intrusive alternatives been assessed?”. '
-                'It keeps its original meaning. It does not tell us whether alternatives exist.')
+        st.caption('This assessment contains an earlier answer to “Have less intrusive alternatives been assessed?”. '
+                   'It keeps its original meaning. It does not tell us whether alternatives exist.')
         st.write('Earlier answer: ' + str(legacy.get('state') or legacy.get('value')))
         if legacy.get('detail'):
             st.write(legacy['detail'])

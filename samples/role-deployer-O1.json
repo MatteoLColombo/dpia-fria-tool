@@ -706,5 +706,6 @@
     "g05_reasoning": null
   },
   "action_plan": {},
-  "residual_reviews": {}
+  "residual_reviews": {},
+  "alternatives_review": null
 }
