@@ -35,6 +35,7 @@ TITLES = {
     'HS07': 'Legal review of a potentially prohibited use',
     'HS08': 'Legal review of serious harm remaining after safeguards',
     'HS09': 'Legal review of serious harm to a vulnerable group',
+    'HS10': 'Legal review of the essence of the right or an absolute right',
     'PROP-00': 'Review the proportionality reasoning',
     'PROP-01': 'Complete the factual basis for the proportionality review',
     'PROP-02': 'Explain how the actual use serves the stated purpose',
@@ -126,7 +127,7 @@ def fingerprint(state, rule_id):
     item = data.pop('action_plan', {}).get(rule_id, {})
     for key in ['reviewed_fingerprint', 'decision', 'review_history', 'shared_action_id', 'shared_history']:
         item.pop(key, None)
-    for key in ['governance', 'api_suggestions', 'assessment_id', 'residual_reviews']:
+    for key in ['governance', 'api_suggestions', 'assessment_id', 'residual_reviews', 'argument']:
         data.pop(key, None)
     data['action'] = item
     return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()

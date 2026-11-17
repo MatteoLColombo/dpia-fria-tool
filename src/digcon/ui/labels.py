@@ -26,8 +26,11 @@ reference. The research framework can be used beyond the statutory scope of an i
 
 1. Describe the system, its actual use, the people affected and the organisation’s responsibilities.
 2. Explain which legal requirements apply. The provider risk management module and deployer FRIA have separate scopes.
-3. Assess harm, involve affected people where relevant, and examine safeguards and legal constraints.
-4. Address findings in the action plan, verify the evidence, and record the organisation’s reasoned decision.
+3. Assess harm as evidence, then argue each right engaged: legality, aim and suitability once for the use; then,
+   for each right, the interference, whether the right admits limitation or its essence is affected, necessity,
+   guarantees and remedies, and the balancing in the strict sense (Article 52(1) of the Charter).
+4. Address findings in the action plan, verify the evidence, record new determinations, and record the
+   organisation’s reasoned decision.
 
 **Law and DIGCON method**
 
@@ -76,10 +79,13 @@ STEP_TEXT = {
     STEP_ADDONS: "The AI Act requirements that apply once the scope is set: Article 9 for providers, Article 27 (FRIA) "
                  "for deployers within its scope. A joint role requires a separate check of each obligation. These modules "
                  "do not cover every potentially applicable legal requirement.",
-    STEP_ANALYSIS: "Built on steps 1 and 2: stakeholder involvement, fundamental rights risks, legal and procedural "
-                   "review, safeguards and mitigation, legal constraints and stop conditions.",
-    STEP_OUTCOME: "The recommended outcome (O1–O5) follows from everything above. It is a recommendation of the tool: "
-                  "the final decision belongs to the organisation and is recorded in 4.2.",
+    STEP_ANALYSIS: "Built on steps 1 and 2: stakeholder involvement and the risk register as evidence, the legal and "
+                   "procedural checks, then an argument for each right engaged — legality, aim and suitability once, "
+                   "then for each right its interference, threshold, necessity, guarantees and balancing — the steps "
+                   "across rights, the action plan and the stop conditions.",
+    STEP_OUTCOME: "The findings show whether the assessment is complete and the position for each right. They are the "
+                  "tool's reading of your determinations: the final decision belongs to the organisation and is "
+                  "recorded in 4.2.",
 }
 
 PHASE_TITLES = {
@@ -105,21 +111,34 @@ OUTCOME_TEXT = {
     Outcome.O2: "Only explicit pilot, deployment or continuous conditions remain. Proceed subject to those conditions.",
     Outcome.O3: "At least one required remediation is still open, failed or not verified. Revise before proceeding.",
     Outcome.O4: "Material information needed for a required conclusion is missing or unknown. Complete the assessment.",
-    Outcome.O5: "At least one stop condition (HS01–HS09) is fully established and confirmed by legal review. A mitigation plan cannot override it.",
+    Outcome.O5: "At least one stop condition (HS01–HS10) is fully established and confirmed by legal review. A mitigation plan cannot override it.",
 }
 RECOMMENDATION_NOTE = (
-    "This is the tool's recommendation, not a decision: the final decision belongs to the organisation "
-    "and is recorded in 4.2 Governance decision."
+    "This is the tool's reading of your determinations, not a decision: the final decision belongs to the "
+    "organisation and is recorded in 4.2 Governance decision."
 )
+POSITION_TEXT = {
+    "CLEAR": "Every engaged right has a complete argument, and no step found an unjustified interference. This is the "
+             "assessors' finding on the record; the tool does not call the use proportionate.",
+    "CONDITIONS": "The argument supports the use while stated measures stay in place during use.",
+    "INCOMPLETE": "Steps are missing, cannot yet be determined, or are out of date. Complete them before relying on a position.",
+    "STOP_EXCLUDED": "A legal review excluded a stop condition; the step that raised it must be revised and the argument continued.",
+    "REVISION": "At least one step requires the use to change. Plan the action, verify it, and record new determinations.",
+    "STOP_PENDING": "A stop condition is raised and awaits the legal review. No balancing or action plan can replace it.",
+    "STOP_CONFIRMED": "A stop condition is confirmed by legal review. The use cannot proceed as designed; a redesign opens a new version.",
+}
 
 
 START_TITLE = "1.0 Assessment workspace"
 ROUTING_TITLE = "2.0 Applicable assessment requirements"
 SEP_TITLE = "3.1 Stakeholder involvement"
 RISKS_TITLE = "3.2 Fundamental rights risks"
-RULES_TITLE = "3.3 Legal and procedural review"
-MITIGATION_TITLE = "3.4 Action plan and mitigation"
-REVIEW_TITLE = "3.5 Legal constraints and stop conditions"
+RULES_TITLE = "3.3 Legal and procedural checks"
+SCREENING_TITLE = "3.4 Rights screening and the use as a whole"
+ARGUMENT_TITLE = "3.5 Argument per right"
+CROSS_TITLE = "3.6 Across rights"
+MITIGATION_TITLE = "3.7 Safeguards and action plan"
+REVIEW_TITLE = "3.8 Legal constraints and stop conditions"
 RESULT_TITLE = "4.1 Assessment findings"
 GOVERNANCE_TITLE = "4.2 Governance decision"
 
@@ -157,6 +176,8 @@ HS_ELEMENTS = {
     "HS08": ("Grave harm to rights established", "Mitigations assessed and insufficient",
              "Risk cannot be reduced to an acceptable level"),
     "HS09": ("Vulnerable group identified", "Grave harm specific to the group", "Not mitigable"),
+    "HS10": ("A right admitting no limitation is limited, or the essence of a right is affected",
+             "No redesign leaves the right or its essence intact"),
 }
 
 # Workbook texts shown in the interface: English for the ones the workbook has in Italian (AS-037), reworded
@@ -196,9 +217,12 @@ NAV_LABELS = {
     PHASE_TITLES[Phase.DEPLOYER]: "2.2  Deployer FRIA · Art. 27",
     SEP_TITLE: "3.1  Stakeholder involvement",
     RISKS_TITLE: "3.2  Fundamental rights risks",
-    RULES_TITLE: "3.3  Legal and procedural review",
-    MITIGATION_TITLE: "3.4  Safeguards and mitigation",
-    REVIEW_TITLE: "3.5  Legal constraints and stop conditions",
+    RULES_TITLE: "3.3  Legal and procedural checks",
+    SCREENING_TITLE: "3.4  Rights screening, use as a whole",
+    ARGUMENT_TITLE: "3.5  Argument per right",
+    CROSS_TITLE: "3.6  Across rights",
+    MITIGATION_TITLE: "3.7  Safeguards and action plan",
+    REVIEW_TITLE: "3.8  Stop conditions",
     RESULT_TITLE: "4.1  Assessment findings",
     GOVERNANCE_TITLE: "4.2  Governance decision",
 }

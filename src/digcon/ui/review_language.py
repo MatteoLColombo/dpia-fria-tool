@@ -35,6 +35,8 @@ PROBLEMS = {
     'HS08.E3': 'Is it impossible to reduce the remaining risk to an acceptable level?',
     'HS09.E2': 'Has grave harm specific to the vulnerable group been established?',
     'HS09.E3': 'Is that group-specific harm incapable of being mitigated?',
+    'HS10.E1': 'Does the use limit a right that admits no limitation, or affect the essence of a Charter right?',
+    'HS10.E2': 'Is it impossible to redesign the use so that the right, or its essence, remains intact?',
     'LEGAL-01.E1': 'Is the reasoning on the legal basis or purpose limitation inadequate, or inconsistent with the recorded answers?',
     'DATA-01.E1': 'Is control over the data categories or sources inadequate for the purpose?',
     'DQ-01.E1': 'Are the data quality measures inadequate?',

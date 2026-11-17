@@ -131,6 +131,8 @@ def _todo(cfg: ConfigBundle, current, interp) -> list[tuple[str, list, str]]:
             continue  # the new alternatives determination belongs to the human reviewer
         if rule.family == "HS":
             continue  # hard-stop elements stay human-only until benchmarked
+        if rule.family == "PROP":
+            continue  # RA-1: proportionality is argued by a person, step by step, in 3.4-3.6
         els = [e for e in pending_elements(cfg, current, [rule.id]) if e.id not in dismissed]
         if not els:
             continue

@@ -11,6 +11,7 @@ import yaml
 
 from digcon.config import default_config
 from digcon.domain.action_plan import fingerprint
+from digcon import argument as ra
 from digcon.domain.enums import AnswerState
 from digcon.domain.models import AssessmentState
 from digcon.engine import RunContext, run_engine
@@ -59,7 +60,26 @@ def _sign_reviews(state: AssessmentState) -> AssessmentState:
         if review.reviewed_fingerprint == AUTO else review
         for rid, review in state.residual_reviews.items()
     }
-    return state.model_copy(update={"action_plan": plan, "residual_reviews": reviews})
+    state = state.model_copy(update={"action_plan": plan, "residual_reviews": reviews})
+    return sign_argument(state)
+
+
+def sign_argument(state: AssessmentState) -> AssessmentState:
+    """RA-1: record every argument determination against the final state, as the assessor does."""
+    cfg = default_config()
+    arg = state.argument.model_copy(deep=True)
+    for scope, steps in [("SYSTEM", arg.system), ("CROSS", arg.cross),
+                         *((r, a.steps) for r, a in arg.rights.items())]:
+        for sid in steps:
+            steps[sid] = steps[sid].model_copy(update={"author": steps[sid].author or "Fixture assessor",
+                                                       "date": steps[sid].date or "2026-10-01"})
+    state = state.model_copy(update={"argument": arg})
+    for scope, steps in [("SYSTEM", arg.system), ("CROSS", arg.cross),
+                         *((r, a.steps) for r, a in arg.rights.items())]:
+        for sid, det in steps.items():
+            if det.fingerprint in ("", AUTO):
+                det.fingerprint = ra.fingerprint(state, cfg, scope, sid)
+    return state
 
 
 def build_state(patch: dict[str, Any] | None = None) -> AssessmentState:
@@ -71,6 +91,15 @@ def build_state(patch: dict[str, Any] | None = None) -> AssessmentState:
     data["answers"].update(patch.get("answers", {}))
     data["elements"] = {**data.get("elements", {}), **patch.get("elements", {})}
     data["risks"] = {**data.get("risks", {}), **patch.get("risks", {})}
+    argument = copy.deepcopy(data.get("argument", {}))
+    for part in ("system", "cross"):
+        argument.setdefault(part, {}).update(patch.get("argument", {}).get(part, {}))
+    rights = argument.setdefault("rights", {})
+    for right, steps in patch.get("argument", {}).get("rights", {}).items():
+        rights.setdefault(right, {}).update(steps)
+    for steps in patch.get("argument", {}).get("drop", []):  # e.g. "CFR-21.B6" or "SYSTEM.A1"
+        scope, sid = steps.split(".")
+        (argument["system"] if scope == "SYSTEM" else argument["cross"] if scope == "CROSS" else rights[scope]).pop(sid, None)
     return _sign_reviews(AssessmentState.model_validate(
         {
             "assessment_id": data["assessment_id"],
@@ -83,6 +112,8 @@ def build_state(patch: dict[str, Any] | None = None) -> AssessmentState:
             "sep": patch.get("sep", {}),
             "action_plan": {r: {"rule_id": r, **v} for r, v in patch.get("action_plan", {}).items()},
             "residual_reviews": patch.get("residual_reviews", {}),
+            "argument": {"system": argument.get("system", {}), "cross": argument.get("cross", {}),
+                         "rights": {r: {"steps": s} for r, s in rights.items()}},
         }
     ))
 

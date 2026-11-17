@@ -41,8 +41,16 @@ def goto(at: AppTest, title) -> AppTest:
 
 def outcome(at: AppTest) -> str:
     goto(at, RESULT_TITLE)
-    banner = next(m.value for m in at.markdown if "Recommended outcome: O" in m.value)
-    return banner.split("Recommended outcome: ", 1)[1][:2]
+    line = next(m.value for m in at.markdown if "Export code: O" in m.value)  # RA-1: derived from the overall position
+    return line.split("Export code: ", 1)[1][:2]
+
+
+def rerecord(at: AppTest, right: str, step: str) -> AppTest:
+    """The assessor reviews a step of the argument on the changed facts and records it again (3.5)."""
+    from digcon.ui.labels import ARGUMENT_TITLE
+    goto(at, ARGUMENT_TITLE)
+    at.selectbox(key="w.arg.selected").set_value(right).run()
+    return at.button(key=f"arg.record.{right}.{step}").click().run()
 
 
 def page_text(at: AppTest) -> str:
@@ -126,6 +134,10 @@ def test_widget_answer_updates_outcome_and_opens_hard_stop():
     at.text_input(key="w.gate.HS05.decision").input("Oversight can be introduced").run()
     at.text_input(key="w.gate.HS05.by").input("F. Paolucci").run()
     no_errors(at)
+    # RA-1 revision loop: the oversight answer changed, so the guarantees step of each engaged right is out of date.
+    assert outcome(at) == "O4"
+    for right in ("CFR-21", "CFR-08"):
+        rerecord(at, right, "B5")
     assert outcome(at) == "O3"  # SCR-01 remediation still open
 
 
@@ -189,6 +201,10 @@ def test_complete_assessment_per_role_from_the_ui(role, extra):
         goto(at, RULES_TITLE)
         for el in ("FRIA-27A.E1", "FRIA-27D.E1", "FRIA-27E.E1", "FRIA-27F.E1", "FRIA-27I.E1"):
             at.button_group(key=f"w.{el}").set_value("NOT_MET").run()
+    if role in ("DEPLOYER", "JOINT"):
+        # RA-1: the deployer module named the affected groups; the interference step is recorded again on them.
+        for right in ("CFR-21", "CFR-08"):
+            rerecord(at, right, "B2")
     no_errors(at)
     assert outcome(at) == "O1"
     audit = [e for e in at.expander if e.label.startswith("Audit trail")]

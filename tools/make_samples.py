@@ -85,6 +85,11 @@ def build() -> dict[str, str]:
         if got != expected:
             raise SystemExit(f"{name}: engine gives {got}, sample promises {expected}")
         state = build_state(patch).model_copy(update={"assessment_id": f"sample-{name}"})
+        from digcon import argument as ra
+        from digcon.config import default_config
+        code = ra.read(state, default_config(), run(patch)).ocode
+        if code != expected:  # RA-1: the export code the app shows, derived from the overall position
+            raise SystemExit(f"{name}: overall position gives {code}, sample promises {expected}")
         out[f"{name}.json"] = state.model_dump_json(indent=2) + "\n"
     return out
 

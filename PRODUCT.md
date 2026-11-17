@@ -29,8 +29,8 @@ The assessment succeeds when a participant reaches a defensible recommended outc
 - A self-paced, step-by-step flow:
   1. Assessment framework (workspace, assessment scope, WHAT, HOW, WHY).
   2. Regulatory requirements, which apply according to the scope answers.
-  3. Rights assessment: stakeholder involvement (SEP), fundamental rights risks, legal and procedural review, safeguards and mitigation, legal constraints and stop conditions.
-  4. Findings and decision: assessment findings (recommended outcome), then the governance decision.
+  3. Rights assessment: stakeholder involvement (SEP), fundamental rights risks, legal and procedural checks, the argument per right (RA-1: screening, use as a whole, each engaged right, across rights), safeguards and action plan, stop conditions.
+  4. Findings and decision: completeness and position per right and overall, then the governance decision.
 - Sessions are resumed by downloading and re-uploading the assessment JSON. There is no account and no database.
 - Results leave the tool as Markdown, JSON and CSV exports, which then feed an organisation's own DPIA, FRIA and governance documents.
 - It runs as a Streamlit app, probably published from the public `main` branch on Streamlit Community Cloud. Development happens on `rewrite/t17-engine`.

@@ -124,6 +124,15 @@ def outcome_banner(outcome: Outcome, title: str, text: str) -> str:
     )
 
 
+def position_banner(ocode: str, title: str, text: str) -> str:
+    """Overall position of the assessment (RA-1), tinted as the export code it maps to."""
+    ground, ink = _OUTCOME_TINT[Outcome(ocode)]
+    return (
+        f'<div class="digcon-outcome" style="background:{ground};color:{ink}">'
+        f'<div class="ttl">Overall position: {escape(title)}</div><p class="txt">{escape(text)}</p></div>'
+    )
+
+
 def counters(items: list[tuple[str, int]]) -> str:
     """One row of open-item counts; zeros recede so the open count leads."""
     cells = "".join(

@@ -703,9 +703,486 @@
     "g02_decision_maker": null,
     "g03_review_date": null,
     "g04_conditions": null,
-    "g05_reasoning": null
+    "g05_reasoning": null,
+    "follows_position": null,
+    "departure_reasons": null
   },
   "action_plan": {},
   "residual_reviews": {},
-  "alternatives_review": null
+  "alternatives_review": null,
+  "argument": {
+    "schema_version": 1,
+    "system": {
+      "A1": {
+        "code": "LAWFUL_QUALITY",
+        "reasons": "Legitimate interest under the GDPR; national employment law allows pre-screening tools with human decision",
+        "sources": [
+          "Art. 6(1)(f) GDPR"
+        ],
+        "evidence": [],
+        "extra": {},
+        "dissent": "",
+        "dissent_by": "",
+        "author": "Fixture assessor",
+        "date": "2026-10-01",
+        "fingerprint": "c4a482418f86892ad52ddd933b0a4956db53f3b034f824cbad6d8de2cf6ddfe0",
+        "history": []
+      },
+      "A2": {
+        "code": "LEGITIMATE",
+        "reasons": "Consistent application of published criteria, serving equal access to employment",
+        "sources": [],
+        "evidence": [],
+        "extra": {},
+        "dissent": "",
+        "dissent_by": "",
+        "author": "Fixture assessor",
+        "date": "2026-10-01",
+        "fingerprint": "f0ab65d6a4bf7444e7394b52d15d68682d8135ceb0100cb55b2e182c0f6be044",
+        "history": []
+      },
+      "A3": {
+        "code": "SERVES",
+        "reasons": "Recruiters use the ranking and correct it where needed",
+        "sources": [],
+        "evidence": [
+          "Override audit Q2-2026"
+        ],
+        "extra": {},
+        "dissent": "",
+        "dissent_by": "",
+        "author": "Fixture assessor",
+        "date": "2026-10-01",
+        "fingerprint": "2c3983c3a867ada4c0b5ff51ed2ebdf3b4bc8f5b6a22c6fb69347e7139fe7103",
+        "history": []
+      }
+    },
+    "rights": {
+      "CFR-21": {
+        "steps": {
+          "S0": {
+            "code": "ENGAGED",
+            "reasons": "Ranking may rely on proxies for protected traits",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "2068b5cfd22310a5498886bcdb3acc41d4123ec1028fd3520d0be034bf92e926",
+            "history": []
+          },
+          "B1": {
+            "code": "DESCRIBED",
+            "reasons": "Equal treatment of applicants in access to employment",
+            "sources": [],
+            "evidence": [],
+            "extra": {
+              "holders": "Applicants"
+            },
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "d275a64311335593f26c81e23796cf1434848ba9dbfd0c3e40711592445152bb",
+            "history": []
+          },
+          "B2": {
+            "code": "INTERFERES",
+            "reasons": "Risk of indirect discrimination through proxies in the ranking",
+            "sources": [],
+            "evidence": [],
+            "extra": {
+              "persons": "Applicants; no way to opt out of the ranking"
+            },
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "1d075ff8fcae202c17e0920b0b9c90ab3232297df78beb1a14c75986887ab2c1",
+            "history": []
+          },
+          "B3R": {
+            "code": "QUALIFIED",
+            "reasons": "Indirect discrimination may be objectively justified",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "7f2d574c90d2ff13b5d512f3ece9caece4f9d34ea76dfe1cad58ed5980be7f51",
+            "history": []
+          },
+          "B3E": {
+            "code": "INTACT",
+            "reasons": "The recruiter decides; no category of applicant is excluded",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "24679c6585d313a0279f1b93c21717179d0e55428bfed995d9e78de9d1202c17",
+            "history": []
+          },
+          "B4": {
+            "code": "NO_LESS_INTRUSIVE",
+            "reasons": "Keyword filters were less accurate; manual screening not practicable at this volume",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "4535252ed82a738a330333e69802311cf3e558c7bea5ea187825f4d9f2cce531",
+            "history": []
+          },
+          "B5": {
+            "code": "ADEQUATE",
+            "reasons": "Human review with override; bias tests passed",
+            "sources": [],
+            "evidence": [
+              "TR-2026-03"
+            ],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "fe27bc510c873cb718fb1a48e90bdcad322e92edfb75b2084c2e977df6558599",
+            "history": []
+          },
+          "B6": {
+            "code": "AIM_PREVAILS",
+            "reasons": "Limited, reversible interference with verified safeguards; the aim is served to a material degree",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "c979e0919708fcd04255cb7ab892d3578a37d4de54a041cf03c2f03da406fb17",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-08": {
+        "steps": {
+          "S0": {
+            "code": "ENGAGED",
+            "reasons": "Processing of applicant data",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "4f3134d087270c09fc7333ca8d889ebe5bc878da2a41c9edbbeba39ed75157ed",
+            "history": []
+          },
+          "B1": {
+            "code": "DESCRIBED",
+            "reasons": "Protection of applicants' personal data",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "38343c5b9667161e27eebfb60446584368952b12039aeb7ab16351b26cdeec60",
+            "history": []
+          },
+          "B2": {
+            "code": "INTERFERES",
+            "reasons": "CV data processed for scoring",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "a705b87164bfa998277414b3d6a01c490a4d0a187d6b950dcb0ce5ab227ea2ee",
+            "history": []
+          },
+          "B3R": {
+            "code": "QUALIFIED",
+            "reasons": "Article 8 may be limited under Article 52(1)",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "c49aef91b2766a2f7aafc0e873274c9ee7757540c53a891a04e59bfd9b736abf",
+            "history": []
+          },
+          "B3E": {
+            "code": "INTACT",
+            "reasons": "Only CV fields relevant to the criteria; deletion after 6 months",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "cfc63a79e7ce8fd166bf6649bd7c42d5636964e6eb4fb0822a27962abc591fb6",
+            "history": []
+          },
+          "B4": {
+            "code": "NO_LESS_INTRUSIVE",
+            "reasons": "Data limited to the published criteria",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "360ea128db24375c552404b518c54c6c56d089f5e8a06fb1abfcb4b0d467bfb2",
+            "history": []
+          },
+          "B5": {
+            "code": "ADEQUATE",
+            "reasons": "Access, rectification and objection available",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "1642115aebac2829ea1051a772eefc7601e5f05906f392783391f393bbab9a65",
+            "history": []
+          },
+          "B6": {
+            "code": "AIM_PREVAILS",
+            "reasons": "Minimised processing with short retention; the aim is served",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "38c693937ae3f161b7e67548417c11bdd212c19d4e2c2d63ca4d6edff3069307",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-01": {
+        "steps": {
+          "S0": {
+            "code": "NOT_ENGAGED",
+            "reasons": "Human decision on every application; no degrading treatment",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "989d961090b937f01c6949100cb6c594a9469ff0e91989e9e91f3fb80d1bc6db",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-07": {
+        "steps": {
+          "S0": {
+            "code": "NOT_ENGAGED",
+            "reasons": "No monitoring or inference beyond CV content",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "ba42c8305787d6ce7d8f5ca8902ac462e6a0161d1a9ac356aaea69988718ecb9",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-10": {
+        "steps": {
+          "S0": {
+            "code": "NOT_ENGAGED",
+            "reasons": "No inference of beliefs",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "26bcb1002f3a9b092077646386168ebef8e6ca992f2b39c33eac5f8a28238962",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-11": {
+        "steps": {
+          "S0": {
+            "code": "NOT_ENGAGED",
+            "reasons": "No effect on expression or information",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "2934d43d1c771bccd8c7b5b10d6547dca298e5f7136e638cee69a4f955d765bc",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-15": {
+        "steps": {
+          "S0": {
+            "code": "NOT_ENGAGED",
+            "reasons": "Ranking orders candidates for a human decision; access to the occupation is not closed",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "b7ba538a72a7bb3092e44c1e0a759181eeaa0ae64b064e7d825ee35171473cc6",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-16": {
+        "steps": {
+          "S0": {
+            "code": "NOT_ENGAGED",
+            "reasons": "Applicants are not businesses; the deployer's interests are weighed at C2",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "4c0b587b7fdf41e2e706c1656885201e9e43a4d1861f5316f6c7df4fdc176815",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-17": {
+        "steps": {
+          "S0": {
+            "code": "NOT_ENGAGED",
+            "reasons": "No effect on possessions",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "3daf176f6a372ae0c3c99caef6fa21f2b9ded47bf2699d8a2ae309f963b287f2",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-35": {
+        "steps": {
+          "S0": {
+            "code": "NOT_ENGAGED",
+            "reasons": "No health care context",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "5bc43d69244e9cfc19cbbbbda0344e8b51ba091bc323ba4c71f2c6104b808dbf",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      },
+      "CFR-47": {
+        "steps": {
+          "S0": {
+            "code": "NOT_ENGAGED",
+            "reasons": "Contestation route available; considered under B5",
+            "sources": [],
+            "evidence": [],
+            "extra": {},
+            "dissent": "",
+            "dissent_by": "",
+            "author": "Fixture assessor",
+            "date": "2026-10-01",
+            "fingerprint": "fdb6da4b72019deb3c6c9a506eb4af66297262150f28dbadf23712429e26a9e9",
+            "history": []
+          }
+        },
+        "open_points": "",
+        "plan": null
+      }
+    },
+    "cross": {
+      "C1": {
+        "code": "NO_CHANGE",
+        "reasons": "The same applicants bear both interferences; both are limited",
+        "sources": [],
+        "evidence": [],
+        "extra": {},
+        "dissent": "",
+        "dissent_by": "",
+        "author": "Fixture assessor",
+        "date": "2026-10-01",
+        "fingerprint": "564768c6503936416a7b5471e86eea8db2fba4aae96baeb64bb9851e04d08795",
+        "history": []
+      },
+      "C2": {
+        "code": "NO_CONFLICT",
+        "reasons": "No trade secret limits the information given to applicants",
+        "sources": [],
+        "evidence": [],
+        "extra": {},
+        "dissent": "",
+        "dissent_by": "",
+        "author": "Fixture assessor",
+        "date": "2026-10-01",
+        "fingerprint": "67f834d47048ce8277ea3237343768cfd5f5231bc54f60275a831f6fd5176d82",
+        "history": []
+      }
+    }
+  }
 }

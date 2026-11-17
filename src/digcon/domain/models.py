@@ -56,12 +56,12 @@ from .enums import (
 # ---------------------------------------------------------------------------
 
 QUESTION_ID_RE = re.compile(r"^(?:C\d{2}B?|N\d{2}|W\d{2}|Q\d{2}|FOLLOW|P\d{2}|D\d{2})$")
-RULE_ID_RE = re.compile(r"^(?:HS0[1-9]|RMS-9[A-Z]|FRIA-27[A-Z]|[A-Z]+-\d{2})$")
+RULE_ID_RE = re.compile(r"^(?:HS(?:0[1-9]|10)|RMS-9[A-Z]|FRIA-27[A-Z]|[A-Z]+-\d{2})$")
 RISK_ID_RE = re.compile(r"^RISK-\d{2}$")
 MITIGATION_ID_RE = re.compile(r"^MIT-\d{3}$")
 SEP_FIELD_ID_RE = re.compile(r"^SEP\d{2}A?$")
 GOVERNANCE_ID_RE = re.compile(r"^G\d{2}$")
-ELEMENT_ID_RE = re.compile(r"^(?:HS0[1-9]|RMS-9[A-Z]|FRIA-27[A-Z]|[A-Z]+-\d{2})\.E\d+$")
+ELEMENT_ID_RE = re.compile(r"^(?:HS(?:0[1-9]|10)|RMS-9[A-Z]|FRIA-27[A-Z]|[A-Z]+-\d{2})\.E\d+$")
 
 QuestionId = Annotated[str, StringConstraints(pattern=QUESTION_ID_RE.pattern)]
 RuleId = Annotated[str, StringConstraints(pattern=RULE_ID_RE.pattern)]
@@ -200,6 +200,14 @@ class SepIs(_Spec):
     is_: list[str] = Field(alias="is", min_length=1)
 
 
+class ArgumentIs(_Spec):
+    """RA-1: a current determination of one of ``steps`` for any engaged right has a code in ``is``."""
+
+    argument: Literal["ANY_RIGHT"]
+    steps: list[Annotated[str, StringConstraints(pattern=r"^[A-Z][0-9][A-Z]?$")]] = Field(min_length=1)
+    is_: list[str] = Field(alias="is", min_length=1)
+
+
 Condition = Union[
     AllOf,
     AnyOf,
@@ -216,6 +224,7 @@ Condition = Union[
     MitigationMatch,
     PropIs,
     SepIs,
+    ArgumentIs,
 ]
 
 for _m in (AllOf, AnyOf, NotOf):
@@ -533,21 +542,118 @@ class SepFile(_Spec):
     triggers: list[SepTrigger]
 
 
+class ExtensionMeta(_Spec):
+    """Rules added on top of the frozen workbook, pending their incorporation in it."""
+
+    extension_version: NonEmpty
+    base_workbook_version: NonEmpty
+    status: NonEmpty
+    description: NonEmpty
+
+
+class ExtensionFile(_Spec):
+    meta: ExtensionMeta
+    rules: list[RuleSpec]
+
+
+OptionEffect = Literal["CONTINUE", "FAVOURABLE", "CONDITIONS", "NOT_ENGAGED", "REVISION", "STOP", "UNDETERMINED"]
+
+
+class StepOption(_Spec):
+    code: Annotated[str, StringConstraints(pattern=r"^[A-Z_]+$")]
+    label: NonEmpty
+    effect: OptionEffect
+    refers_to: RuleId | None = None  # STOP: the stop condition the legal review decides
+    legal_review: bool = False
+
+
+class StepSpec(_Spec):
+    id: Annotated[str, StringConstraints(pattern=r"^[A-Z][0-9][A-Z]?$")]
+    level: Literal["SYSTEM", "RIGHT", "CROSS"]
+    title: NonEmpty
+    question: NonEmpty
+    note: NonEmpty
+    mistake: NonEmpty
+    example: NonEmpty
+    options: list[StepOption] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def _stop_named(self) -> StepSpec:
+        for o in self.options:
+            if (o.effect == "STOP") != (o.refers_to is not None):
+                raise ValueError(f"{self.id}.{o.code}: a STOP option names its stop condition, and only it")
+        if not any(o.effect == "UNDETERMINED" for o in self.options):
+            raise ValueError(f"{self.id}: every step offers an undetermined option")
+        return self
+
+    def option(self, code: str) -> StepOption | None:
+        return next((o for o in self.options if o.code == code), None)
+
+
+class RightCard(_Spec):
+    id: Annotated[str, StringConstraints(pattern=r"^CFR-\d{2}$")]
+    risk_id: RiskId | None = None
+    title: NonEmpty
+    protects: NonEmpty
+    echr: NonEmpty
+    regime: NonEmpty
+    essence: NonEmpty
+    interferences: list[NonEmpty]
+    questions: list[NonEmpty]
+    sources: list[NonEmpty]
+    status: Literal["DRAFT", "VERIFIED"]
+    verified_by: str = ""
+    verified_on: str = ""
+
+
+class ArgumentMeta(_Spec):
+    version: NonEmpty
+    status: NonEmpty
+    disclaimer: NonEmpty
+
+
+class ArgumentFile(_Spec):
+    meta: ArgumentMeta
+    steps: list[StepSpec]
+    rights: list[RightCard]
+
+    def step(self, sid: str) -> StepSpec:
+        return _by_id(self.steps, sid)
+
+    def right(self, rid: str) -> RightCard:
+        return _by_id(self.rights, rid)
+
+
 class ConfigBundle(_Spec):
     """Everything the runtime reads from ``config/``."""
 
     version: NonEmpty
+    extension: ExtensionMeta | None = None
+    argument: ArgumentFile | None = None
     questions: QuestionsFile
     rules: RulesFile
     risks: RisksFile
     mitigations: MitigationsFile
     sep: SepFile
 
+    @property
+    def logic_version(self) -> str:
+        """Workbook version plus the layers added on top of it, as shown in reports."""
+        parts = [self.version]
+        if self.extension:
+            parts.append(self.extension.extension_version)
+        if self.argument and (not self.extension or self.argument.meta.version != self.extension.extension_version):
+            parts.append(self.argument.meta.version)
+        return " + ".join(parts)
+
     def question(self, qid: str) -> QuestionSpec:
         return _by_id(self.questions.questions, qid)
 
     def rule(self, rid: str) -> RuleSpec:
         return _by_id(self.rules.rules, rid)
+
+    def rules_by_id(self) -> set[str]:
+        return {r.id for r in self.rules.rules}
 
     def risk(self, rid: str) -> RiskSpec:
         return _by_id(self.risks.risks, rid)
@@ -674,6 +780,9 @@ class GovernanceRecord(_State):
     g03_review_date: str | None = None
     g04_conditions: str | None = None
     g05_reasoning: str | None = None
+    # RA-1: whether the decision follows the overall position of the assessment; reasons when it departs.
+    follows_position: Literal["FOLLOWS", "DEPARTS"] | None = None
+    departure_reasons: str | None = None
 
 
 class ActionPlanItem(_State):
@@ -721,6 +830,48 @@ class AlternativesReview(_State):
     history: list[dict] = []
 
 
+class Determination(_State):
+    """One step of the rights argument (RA-1): a determination with its reasons, recorded by a person.
+
+    The engine reads that a determination exists, is reasoned and is current. It never reads its merits.
+    """
+
+    code: str = ""  # an option code of the step; "" = not yet determined
+    reasons: str = ""
+    sources: list[NonEmpty] = []  # provisions, case law, guidance
+    evidence: list[NonEmpty] = []  # documents, tests, stakeholder input
+    extra: dict[str, str] = {}  # step-specific fields (holders, persons affected, conditions)
+    dissent: str = ""
+    dissent_by: str = ""
+    author: str = ""
+    date: str = ""
+    fingerprint: str = ""  # the facts relied on, when recorded; a change makes it out of date
+    history: list[dict] = []
+
+
+class RevisionPlan(_State):
+    """What the organisation will change for one right after a revision or a condition (RA-1 revision loop)."""
+
+    action: str = ""
+    owner: str = ""
+    due_date: str = ""
+    measures: list[MitigationId] = []  # catalogue measures linked to this right; verified in 3.7
+    status: Literal["PLANNED", "IN_PROGRESS", "DONE"] = "PLANNED"
+
+
+class RightArgument(_State):
+    steps: dict[str, Determination] = {}  # S0, B1, B2, B3R, B3E, B4, B5, B6
+    open_points: str = ""  # B7: uncertainty and disagreement
+    plan: RevisionPlan | None = None
+
+
+class ArgumentState(_State):
+    schema_version: Literal[1] = 1
+    system: dict[str, Determination] = {}  # A1, A2, A3
+    rights: dict[Annotated[str, StringConstraints(pattern=r"^CFR-\d{2}$")], RightArgument] = {}
+    cross: dict[str, Determination] = {}  # C1, C2
+
+
 class AssessmentState(_State):
     assessment_id: NonEmpty
     workbook_version: NonEmpty
@@ -735,6 +886,7 @@ class AssessmentState(_State):
     action_plan: dict[RuleId, ActionPlanItem] = {}
     residual_reviews: dict[RiskId, ResidualRiskReview] = {}
     alternatives_review: AlternativesReview | None = None
+    argument: ArgumentState = ArgumentState()
 
     @model_validator(mode="after")
     def _keys_match(self) -> AssessmentState:

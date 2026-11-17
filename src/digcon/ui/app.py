@@ -23,6 +23,9 @@ from . import api_mode, bridge, state
 from .labels import (
     APP_CAPTION,
     APP_TITLE,
+    ARGUMENT_TITLE,
+    CROSS_TITLE,
+    SCREENING_TITLE,
     DISCLAIMER,
     BYLINE,
     FOOTER,
@@ -45,7 +48,7 @@ from .labels import (
     STEP_OUTCOME,
     STEP_TEXT,
 )
-from .pages import mitigation, questionnaire, result, review, risks, routing, sep, start
+from .pages import argument, mitigation, questionnaire, result, review, risks, routing, sep, start
 from .style import CSS, OUTCOME_COLOUR
 
 NAV = state.NAV
@@ -96,6 +99,9 @@ def _steps() -> dict[str, list[tuple[str, object]]]:
             (SEP_TITLE, sep.render),
             (RISKS_TITLE, risks.render),
             (RULES_TITLE, review.render_rules),
+            (SCREENING_TITLE, argument.render_screening),
+            (ARGUMENT_TITLE, argument.render_rights),
+            (CROSS_TITLE, argument.render_cross),
             (MITIGATION_TITLE, mitigation.render),
             (REVIEW_TITLE, review.render_hard_stops),
         ],
@@ -160,10 +166,21 @@ def _progress(cfg, res: EngineResult | None) -> tuple[dict[str, str], dict[str, 
     marks[RULES_TITLE] = (f":gray-badge[{len(res.verification_requests)} to verify]" if res.verification_requests
                           else ":green-badge[:material/check: Nothing to verify]")
     marks[MITIGATION_TITLE] = f":gray-badge[{sum(1 for m in store['mitigations'].values() if m.get('activated'))} activated]"
+    from digcon import argument as ra
+    current = state.assessment()
+    positions = ra.read(current, cfg, res)
+    screened = sum(1 for c in cfg.argument.rights if ra.current_code(current, cfg, c.id, "S0"))
+    marks[SCREENING_TITLE] = f":gray-badge[{screened} / {len(cfg.argument.rights)} screened]"
+    engaged = ra.engaged(current, cfg)
+    done = sum(1 for r in engaged if positions.rights[r].position not in ra.OPEN)
+    marks[ARGUMENT_TITLE] = (f":gray-badge[{done} / {len(engaged)} rights argued]" if engaged
+                             else ":gray-badge[No right engaged]")
+    cross_open = [i for i in positions.system if i.scope == "CROSS" and i.position in ra.OPEN]
+    marks[CROSS_TITLE] = ":gray-badge[To determine]" if cross_open else ":green-badge[:material/check: Recorded]" if engaged else ":gray-badge[—]"
     from digcon.domain.review_progress import stop_progress
     opened = sum(stop_progress(h)[1] for h in res.hard_stops.values())
     marks[REVIEW_TITLE] = f":orange-badge[{opened} need attention]" if opened else ":gray-badge[No pending stop checks]"
-    marks[RESULT_TITLE] = f":{OUTCOME_COLOUR[res.outcome]}-badge[{res.outcome.value}]"
+    marks[RESULT_TITLE] = f":{argument.BADGE[positions.overall]}-badge[{ra.LABELS[positions.overall]}]"
     marks[GOVERNANCE_TITLE] = ":green-badge[Recorded]" if store["governance"].get("g01_decision") else ":gray-badge[To record]"
     return {k: v for k, v in marks.items() if v}, counts
 
@@ -186,11 +203,13 @@ def _menu(cfg, steps: dict[str, list], res: EngineResult | None, marks: dict[str
                     unsafe_allow_html=True)
         with st.container(border=True):
             if res is not None:
-                st.markdown(f":{OUTCOME_COLOUR[res.outcome]}-badge[{OUTCOME_TITLES[res.outcome]}]")
-                st.caption(
-                    f"{len(res.evidence_gaps)} evidence gaps · {len(res.open_remediations)} remediations · "
-                    f"{len(res.verification_requests)} to verify"
-                )
+                from digcon import argument as ra
+                positions = ra.read(state.assessment(), cfg, res)
+                st.markdown(f"{argument.badge(positions.overall)} "
+                            + (":gray[Complete]" if positions.complete else f":gray[Incomplete: {len(positions.missing)} open]"))
+                revisions = sum(1 for i in positions.system + [x for p in positions.rights.values() for x in p.items]
+                                if i.position == ra.REVISION)
+                st.caption(f"{revisions} revisions required · {len(res.verification_requests)} to verify")
             _save_block(cfg)
         for n, (step, items) in enumerate(steps.items(), 1):
             st.markdown(f'<div class="digcon-step">Step {n} · {step.split(" — ", 1)[1]}</div>', unsafe_allow_html=True)

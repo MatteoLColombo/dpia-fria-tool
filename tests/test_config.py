@@ -31,7 +31,7 @@ def test_version(cfg):
 def test_workbook_in_numbers(cfg):
     phases = Counter(q.phase.value for q in cfg.questions.questions)
     assert phases == {"INTRO": 7, "WHAT": 7, "HOW": 14, "WHY": 25, "PROVIDER": 10, "DEPLOYER": 11}
-    assert len(cfg.rules.rules) == 79  # 73 of REV 2 + FRIA-27G–J + RSEL-01 + RACT-01 (ANOMALIE A9)
+    assert len(cfg.rules.rules) == 79 + 1  # 79 of the workbook (ANOMALIE A9) + HS10 (extension RA-1)
     assert len(cfg.risks.risks) == 11
     assert len(cfg.mitigations.mitigations) == 50
     assert len(cfg.sep.fields) == 15  # SEP00–SEP13 + SEP04A
@@ -50,7 +50,7 @@ def test_no_unregistered_errors(cfg):
 
 def test_only_hard_stops_and_out05_can_produce_o5(cfg):
     o5 = {r.id for r in cfg.rules.rules if r.can_produce_o5}
-    assert o5 == {f"HS0{i}" for i in range(1, 10)} | {"OUT-05"}
+    assert o5 == {f"HS{i:02d}" for i in range(1, 11)} | {"OUT-05"}  # HS10 from extension RA-1
     assert all(r.encoding.outcome != "O5" for r in cfg.rules.rules if r.id != "OUT-05")
     assert not any(r.can_produce_o5 for r in cfg.rules.rules if r.family == "PROP")
 

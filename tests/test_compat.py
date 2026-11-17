@@ -52,7 +52,8 @@ def test_legacy_file_loaded_in_the_app():
     at.session_state[ui_state.STORE] = ui_state.parse_upload((LEGACY / "role-joint-O1-2026-10-12.json").read_bytes())
     at.run()
     no_errors(at)
-    assert outcome(at) == "O1"
+    # O1 under the workbook alone; a file from before the rights argument (RA-1) has no argument yet.
+    assert outcome(at) == "O4"
 
 
 def test_reload_keeps_an_approved_action_and_a_residual_review():

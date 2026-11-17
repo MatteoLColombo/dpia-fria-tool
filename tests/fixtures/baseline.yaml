@@ -87,3 +87,43 @@ elements:
 
 risks:
   RISK-21: {scale: MEDIUM, scope: LIMITED, reversibility: REVERSIBLE, probability: POSSIBLE}
+
+# Rights argument RA-1 (step 3): screening of every right of the register, the use as a whole,
+# a full argument for the two engaged rights, and the steps across rights. Signed against the
+# final state (fingerprint AUTO). Without it the overall position stays "incomplete".
+argument:
+  system:
+    A1: {code: LAWFUL_QUALITY, reasons: "Legitimate interest under the GDPR; national employment law allows pre-screening tools with human decision", sources: ["Art. 6(1)(f) GDPR"]}
+    A2: {code: LEGITIMATE, reasons: "Consistent application of published criteria, serving equal access to employment"}
+    A3: {code: SERVES, reasons: "Recruiters use the ranking and correct it where needed", evidence: ["Override audit Q2-2026"]}
+  rights:
+    CFR-21:
+      S0: {code: ENGAGED, reasons: "Ranking may rely on proxies for protected traits"}
+      B1: {code: DESCRIBED, reasons: "Equal treatment of applicants in access to employment", extra: {holders: "Applicants"}}
+      B2: {code: INTERFERES, reasons: "Risk of indirect discrimination through proxies in the ranking", extra: {persons: "Applicants; no way to opt out of the ranking"}}
+      B3R: {code: QUALIFIED, reasons: "Indirect discrimination may be objectively justified"}
+      B3E: {code: INTACT, reasons: "The recruiter decides; no category of applicant is excluded"}
+      B4: {code: NO_LESS_INTRUSIVE, reasons: "Keyword filters were less accurate; manual screening not practicable at this volume"}
+      B5: {code: ADEQUATE, reasons: "Human review with override; bias tests passed", evidence: ["TR-2026-03"]}
+      B6: {code: AIM_PREVAILS, reasons: "Limited, reversible interference with verified safeguards; the aim is served to a material degree"}
+    CFR-08:
+      S0: {code: ENGAGED, reasons: "Processing of applicant data"}
+      B1: {code: DESCRIBED, reasons: "Protection of applicants' personal data"}
+      B2: {code: INTERFERES, reasons: "CV data processed for scoring"}
+      B3R: {code: QUALIFIED, reasons: "Article 8 may be limited under Article 52(1)"}
+      B3E: {code: INTACT, reasons: "Only CV fields relevant to the criteria; deletion after 6 months"}
+      B4: {code: NO_LESS_INTRUSIVE, reasons: "Data limited to the published criteria"}
+      B5: {code: ADEQUATE, reasons: "Access, rectification and objection available"}
+      B6: {code: AIM_PREVAILS, reasons: "Minimised processing with short retention; the aim is served"}
+    CFR-01: {S0: {code: NOT_ENGAGED, reasons: "Human decision on every application; no degrading treatment"}}
+    CFR-07: {S0: {code: NOT_ENGAGED, reasons: "No monitoring or inference beyond CV content"}}
+    CFR-10: {S0: {code: NOT_ENGAGED, reasons: "No inference of beliefs"}}
+    CFR-11: {S0: {code: NOT_ENGAGED, reasons: "No effect on expression or information"}}
+    CFR-15: {S0: {code: NOT_ENGAGED, reasons: "Ranking orders candidates for a human decision; access to the occupation is not closed"}}
+    CFR-16: {S0: {code: NOT_ENGAGED, reasons: "Applicants are not businesses; the deployer's interests are weighed at C2"}}
+    CFR-17: {S0: {code: NOT_ENGAGED, reasons: "No effect on possessions"}}
+    CFR-35: {S0: {code: NOT_ENGAGED, reasons: "No health care context"}}
+    CFR-47: {S0: {code: NOT_ENGAGED, reasons: "Contestation route available; considered under B5"}}
+  cross:
+    C1: {code: NO_CHANGE, reasons: "The same applicants bear both interferences; both are limited"}
+    C2: {code: NO_CONFLICT, reasons: "No trade secret limits the information given to applicants"}

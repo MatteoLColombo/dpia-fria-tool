@@ -28,9 +28,15 @@ The assessment runs in four steps, shown in the left rail:
 2. **Regulatory requirements**: applicable assessment requirements, then provider obligations
    (Art. 9) and the deployer FRIA (Art. 27), which open only when the step 1 answers call for them.
 3. **Rights assessment**: stakeholder involvement, fundamental rights risks, legal and procedural
-   review, safeguards and mitigation, legal constraints and stop conditions.
-4. **Findings and decision**: assessment findings (the recommended outcome), then the governance
-   decision, which a person records.
+   checks, then an argument per right — screening, the use as a whole (legality, aim, suitability),
+   for each engaged right the interference, threshold, necessity, guarantees and balancing, and the
+   steps across rights — the action plan and the stop conditions.
+4. **Findings and decision**: whether the assessment is complete and the position for each right
+   and overall, then the governance decision, which a person records with reasons when it departs
+   from the position.
+
+Step 3 follows the rights argument RA-1 (draft): see [ARGUMENT-RA1.md](ARGUMENT-RA1.md). It is not
+yet part of the workbook.
 
 Answers are autosaved in the browser. To keep an assessment or move it to another computer,
 use **Save progress** to download a JSON file, and load it again from **Assessment workspace →
@@ -70,7 +76,8 @@ python tools/make_samples.py           # rebuild samples/ after an engine or con
 ```
 
 - `config/` holds the questions, rules, risks, mitigations and stakeholder engagement fields
-  as YAML, exported from the frozen workbook. The rules are data: the engine has no rule IDs
+  as YAML, exported from the frozen workbook. `config/argument.yaml` (steps and right cards) and
+  `config/extension.yaml` (HS10) are written by hand for RA-1 until the workbook takes them in. The rules are data: the engine has no rule IDs
   written into its code.
 - `src/digcon/engine/` is the decision engine (pure functions), `src/digcon/ui/` the Streamlit
   interface.

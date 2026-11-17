@@ -12,13 +12,21 @@ FORMAT = "digcon-report/1"
 
 
 def build(state: AssessmentState, result: EngineResult) -> dict[str, Any]:
+    from digcon import argument as ra
+    from digcon.config import default_config
+
+    positions = ra.read(state, default_config(), result)
     return {
         "format": FORMAT,
         "assessment_id": state.assessment_id,
         "workbook_version": result.workbook_version,
         "run_id": result.run_id,
         "generated_at": result.timestamp.isoformat(),
-        "recommended_outcome": result.outcome.value,
+        "recommended_outcome": positions.ocode,  # RA-1: derived from the overall position
+        "overall_position": positions.overall,
+        "assessment_complete": positions.complete,
+        "positions": {r: p.position for r, p in positions.rights.items()},
+        "workbook_outcome": result.outcome.value,
         "outcome_rule": result.outcome_rule,
         "audit_closed": result.closed,
         "assessment": state.model_dump(mode="json"),

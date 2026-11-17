@@ -41,6 +41,7 @@ from .models import (
     RULE_ID_RE,
     AnswerIs,
     AnswerProvided,
+    ArgumentIs,
     AnswerUnresolved,
     ConfigBundle,
     ElementIs,
@@ -63,10 +64,12 @@ EXPECTED_RULE_FAMILIES = {
     "SYS": 3, "CROSS": 2, "EG": 1, "QUAL": 1, "ROLE": 1, "SCOPE": 1, "LEGAL": 1, "DATA": 1,
     "DQ": 1, "BIAS": 1, "TRANS": 1, "REM": 1, "RSEL": 1, "RACT": 1,
 }  # fmt: skip
+# Rules added by config/extension.yaml (RA-1): HS10.
+EXTENSION_RULE_FAMILIES = {"HS": 1}
 EXPECTED_RISKS = 11
 EXPECTED_MITIGATIONS = 50
 EXPECTED_SEP_FIELDS = 15
-HARD_STOPS = [f"HS0{i}" for i in range(1, 10)]
+HARD_STOPS = [f"HS{i:02d}" for i in range(1, 11)]  # HS10 from the RA-1 extension
 # PROP rules that return a PropStatus (PROP-11). PROP-00/-08/-11 are system / loop rules.
 PROP_WITH_STATUS = ["PROP-01", "PROP-02", "PROP-03", "PROP-04", "PROP-05", "PROP-06", "PROP-07", "PROP-09", "PROP-10"]
 # SEP fields that conditions may test, with their closed values (04A response models).
@@ -183,8 +186,11 @@ class _Validator:
             if phases.get(phase, 0) != n:
                 self.add("ERROR", "COUNT", f"phase {phase.value}", f"{phases.get(phase, 0)} questions, expected {n}")
         families = Counter(r.family for r in self.b.rules.rules)
-        if families != Counter(EXPECTED_RULE_FAMILIES):
-            self.add("ERROR", "COUNT", "rules", f"families {dict(families)} != {EXPECTED_RULE_FAMILIES}")
+        expected = Counter(EXPECTED_RULE_FAMILIES)
+        if self.b.extension is not None:
+            expected.update(EXTENSION_RULE_FAMILIES)
+        if families != expected:
+            self.add("ERROR", "COUNT", "rules", f"families {dict(families)} != {dict(expected)}")
         for what, n, exp in (
             ("risks", len(self.risks), EXPECTED_RISKS),
             ("mitigations", len(self.mitigations), EXPECTED_MITIGATIONS),
@@ -251,7 +257,7 @@ class _Validator:
             # Invariants (05_REGOLE_HS / 06_API).
             is_hs = r.id in HARD_STOPS
             if r.can_produce_o5 and not (is_hs or r.id == "OUT-05"):
-                self.add("ERROR", "INVARIANT-O5", r.id, "only HS01–HS09 and OUT-05 may produce O5")
+                self.add("ERROR", "INVARIANT-O5", r.id, "only HS01–HS10 and OUT-05 may produce O5")
             if is_hs:
                 if r.severity is not RuleSeverity.HARD_STOP:
                     self.add("ERROR", "INVARIANT-HS", r.id, "hard stop without severity HARD STOP")
@@ -262,7 +268,7 @@ class _Validator:
                 if not any(e.non_remediability for e in enc.elements):
                     self.add("ERROR", "INVARIANT-HS", r.id, "hard stop without a non-remediability element")
             elif r.severity is RuleSeverity.HARD_STOP:
-                self.add("ERROR", "INVARIANT-HS", r.id, "severity HARD STOP outside HS01–HS09")
+                self.add("ERROR", "INVARIANT-HS", r.id, "severity HARD STOP outside HS01–HS10")
             if RuleEffect.OUTCOME in effects and r.family != "OUT":
                 self.add("ERROR", "INVARIANT-OUTCOME", r.id, "only OUT-* rules emit an outcome")
             if r.family == "OUT" and enc.outcome is None:
@@ -306,6 +312,18 @@ class _Validator:
                     self.add("ERROR", "ENUM", subject, f"{where}: {node.sep} has no closed values")
                 elif set(node.is_) - SEP_VALUES[node.sep]:
                     self.add("ERROR", "ENUM", subject, f"{where}: {node.sep} cannot take {sorted(set(node.is_) - SEP_VALUES[node.sep])}")
+            elif isinstance(node, ArgumentIs):
+                if self.b.argument is None:
+                    self.add("ERROR", "REF-ARGUMENT", subject, f"{where}: no config/argument.yaml")
+                    continue
+                ids = {s.id for s in self.b.argument.steps}
+                for step in node.steps:
+                    if step not in ids:
+                        self.add("ERROR", "REF-ARGUMENT", subject, f"{where}: step {step} does not exist")
+                        continue
+                    codes = {o.code for o in self.b.argument.step(step).options}
+                    if not set(node.is_) & codes:
+                        self.add("ERROR", "ENUM", subject, f"{where}: {step} takes none of {node.is_}")
             elif isinstance(node, HardStopIs):
                 if node.hs not in HARD_STOPS:
                     self.add("ERROR", "REF-RULE", subject, f"{where}: {node.hs} is not a hard stop")

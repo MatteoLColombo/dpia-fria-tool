@@ -29,9 +29,12 @@ def test_markdown_report_covers_outcome_answers_and_audit(path):
     state = _sample(path)
     result = run_engine(CFG, state, CTX)
     md = markdown.build(CFG, state, result)
-    assert OUTCOME_TITLES[result.outcome] in md
+    from digcon import argument as ra
+    positions = ra.read(state, CFG, result)
+    assert OUTCOME_TITLES[result.outcome] in md  # the workbook's reading stays on record
+    assert positions.label() in md and f"export code {positions.ocode}" in md
     assert state.assessment_id in md and result.workbook_version in md
-    assert "the tool's recommendation, not a decision" in md
+    assert "not a decision" in md and "## 7. Rights argument" in md
     for qid in result.visible_questions:
         assert f"| {qid} |" in md, qid
     for event in result.audit_trail:
@@ -46,7 +49,8 @@ def test_json_report_holds_the_assessment_and_full_audit_trail(path):
     result = run_engine(CFG, state, CTX)
     data = json.loads(json_report.dumps(state, result))
     assert data["format"] == json_report.FORMAT
-    assert data["recommended_outcome"] == result.outcome.value
+    assert data["workbook_outcome"] == result.outcome.value
+    assert data["recommended_outcome"] in ("O1", "O2", "O3", "O4", "O5")
     assert data["workbook_version"] == result.workbook_version
     assert len(data["result"]["audit_trail"]) == len(result.audit_trail)
     assert AssessmentState.model_validate(data["assessment"]) == state

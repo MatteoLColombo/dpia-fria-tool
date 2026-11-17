@@ -14,7 +14,13 @@ from digcon.reporting import csv_tables, json_report, markdown
 
 from .. import state
 from digcon.domain.action_plan import title as finding_title
+from digcon import argument as ra
+from .argument import BADGE, badge
 from ..labels import (
+    ARGUMENT_TITLE,
+    CROSS_TITLE,
+    POSITION_TEXT,
+    SCREENING_TITLE,
     MITIGATION_TITLE,
     NAV_LABELS,
     OUTCOME_TEXT,
@@ -26,7 +32,7 @@ from ..labels import (
     RULES_TITLE,
     workbook_text,
 )
-from ..style import OUTCOME_COLOUR, counters, outcome_banner, risk_matrix
+from ..style import OUTCOME_COLOUR, counters, outcome_banner, position_banner, risk_matrix
 
 GOVERNANCE_FIELDS = {
     "G01": "g01_decision",
@@ -85,7 +91,7 @@ def _open_plan(rule_id):
 
 def _next_steps(cfg: ConfigBundle, result: EngineResult) -> None:
     with st.container(border=True):
-        st.subheader("What to do next")
+        st.subheader("Workbook findings in detail")
         if not any(getattr(result, attr) for attr, *_ in _NEXT):
             st.caption("Nothing open: no gap, remediation, condition, pending review or verification request.")
             return
@@ -137,29 +143,79 @@ def _risk_tab(cfg: ConfigBundle, result: EngineResult) -> None:
     )
 
 
+def _go_item(item) -> None:
+    if item.scope == "SYSTEM":
+        state.go(SCREENING_TITLE)
+    elif item.scope == "CROSS":
+        state.go(CROSS_TITLE)
+    elif item.scope.startswith("CFR-"):
+        if item.ref == "S0":
+            state.go(SCREENING_TITLE)
+        else:
+            st.session_state["w.arg.selected"] = item.scope
+            state.go(ARGUMENT_TITLE)
+    else:
+        _open_plan(item.ref)
+
+
+_GROUPS = ((ra.STOP_CONFIRMED, "Stop confirmed"), (ra.STOP_PENDING, "Stop: legal review pending"),
+           (ra.REVISION, "Revision required"), (ra.STOP_EXCLUDED, "Stop excluded: revise and continue"),
+           (ra.INCOMPLETE, "Missing, undetermined or out of date"), (ra.CONDITIONS, "Conditions"))
+
+
+def _where(cfg, item) -> str:
+    if item.scope == "SYSTEM":
+        return "The use as a whole"
+    if item.scope == "CROSS":
+        return "Across rights"
+    if item.scope == "WORKBOOK":
+        return "Steps 1–2 and checks"
+    return cfg.argument.right(item.scope).title
+
+
+def _positions_next(cfg, positions) -> None:
+    every = positions.system + [i for p in positions.rights.values() for i in p.items]
+    with st.container(border=True):
+        st.subheader("What to do next")
+        if not every:
+            st.caption("Nothing open.")
+            return
+        n = 0
+        for pos, heading in _GROUPS:
+            items = [i for i in every if i.position == pos]
+            if not items:
+                continue
+            st.markdown(f"**{heading}** :{BADGE[pos]}-badge[{len(items)}]")
+            for item in items:
+                text_col, go_col = st.columns([6, 1], vertical_alignment="center")
+                text_col.markdown(f"{_where(cfg, item)} — {item.text}")
+                go_col.button("Work on this", key=f"next.pos.{n}", on_click=_go_item, args=(item,),
+                              icon=":material/arrow_forward:", type="tertiary")
+                n += 1
+
+
 def render(cfg: ConfigBundle, result: EngineResult) -> None:
-    from digcon.domain.review_progress import stop_progress
-    opened = [h for h, v in result.hard_stops.items() if stop_progress(v)[1]]
-    st.markdown(outcome_banner(result.outcome, OUTCOME_TITLES[result.outcome], OUTCOME_TEXT[result.outcome]),
+    current = state.assessment()
+    positions = ra.read(current, cfg, result)
+    st.markdown(position_banner(positions.ocode, positions.label(), POSITION_TEXT[positions.overall]),
                 unsafe_allow_html=True)
+    st.markdown(("**Assessment complete.**" if positions.complete
+                 else f"**Assessment incomplete:** {len(positions.missing)} step(s) missing, undetermined, out of date or awaiting legal review.")
+                + f"  :gray[Export code: {positions.ocode}]")
     st.markdown(f":material/info: **{RECOMMENDATION_NOTE}**")
     with st.expander("Technical decision details"):
-        st.caption(f"Rule {result.outcome_rule} · precedence O5 → O4 → O3 → O2 → O1 · logic version {result.workbook_version}.")
-    st.markdown(counters([
-        ("Evidence gaps", len(result.evidence_gaps)),
-        ("Open remediations", len(result.open_remediations)),
-        ("Conditions", len(result.open_conditions)),
-        ("Stop checks needing attention", len(opened)),
-        ("Legal reviews pending", len(result.pending_reviews)),
-    ]), unsafe_allow_html=True)
-
+        st.caption(f"The export code is derived from the overall position (stop confirmed → O5; incomplete → O4; "
+                   f"revision → O3; conditions → O2; otherwise O1). The workbook's own reading of steps 1–2 "
+                   f"(rule {result.outcome_rule}) gives {result.outcome.value}. Logic version {cfg.logic_version}.")
+    st.markdown("| Right | Position |\n|---|---|\n" + "\n".join(
+        f"| {cfg.argument.right(r).title} | {badge(p.position)} |" for r, p in positions.rights.items()))
     for w in result.warnings:
         st.warning(w)
 
-    _next_steps(cfg, result)
+    _positions_next(cfg, positions)
 
     tab_risk, tab_hs, tab_prop, tab_mit, tab_audit = st.tabs(
-        ["Fundamental rights risks", "Stop conditions", "Proportionality", "Safeguards and mitigation", "Audit trail"]
+        ["Fundamental rights risks", "Stop conditions", "Workbook findings", "Safeguards and mitigation", "Audit trail"]
     )
     with tab_risk:
         _risk_tab(cfg, result)
@@ -176,20 +232,9 @@ def render(cfg: ConfigBundle, result: EngineResult) -> None:
             hide_index=True,
         )
     with tab_prop:
-        if result.prop_statuses:
-            st.dataframe(
-                pd.DataFrame(
-                    [
-                        {"Rule": r, "Status": label(s), "Action": ", ".join(label(e) for e in result.rules[r].effects)}
-                        for r, s in result.prop_statuses.items()
-                    ]
-                ),
-                width="stretch",
-                hide_index=True,
-            )
-            st.caption("The tool never concludes 'proportionate' or 'disproportionate': normative balancing stays with legal review.")
-        else:
-            st.caption("No proportionality check applicable yet.")
+        st.caption("The workbook's findings for steps 1–2 and the checks, as the engine reads them. Its "
+                   "proportionality rules (PROP-*) are replaced by the argument per right and are not listed in the position.")
+        _next_steps(cfg, result)
     with tab_mit:
         activated = [m for m in state.assessment().mitigations.values() if m.activated]
         if activated:
@@ -252,19 +297,27 @@ def downloads(cfg: ConfigBundle, result: EngineResult, where: str) -> None:
                                        key=f"report.csv.{file_}.{where}", icon=":material/download:", width="stretch")
 
 
+FOLLOWS = {"": "Not yet stated", "FOLLOWS": "The decision follows the overall position",
+           "DEPARTS": "The decision departs from the overall position"}
+
+
 def _sync_governance() -> None:
     gov = {attr: (st.session_state.get(f"w.gov.{gid}") or "").strip() or None for gid, attr in GOVERNANCE_FIELDS.items()}
+    gov["follows_position"] = st.session_state.get("w.gov.follows") or None
+    gov["departure_reasons"] = (st.session_state.get("w.gov.departure") or "").strip() or None
     state.store()["governance"] = gov
 
 
 def render_governance(cfg: ConfigBundle, result: EngineResult) -> None:
+    current = state.assessment()
+    positions = ra.read(current, cfg, result)
+    st.markdown(f"Overall position: {badge(positions.overall)} "
+                + ("(assessment complete)" if positions.complete else "(assessment incomplete)")
+                + f" · export code {positions.ocode}.")
     st.markdown(
-        f"Recommended outcome: :{OUTCOME_COLOUR[result.outcome]}-badge[{OUTCOME_TITLES[result.outcome]}] "
-        f"(rule {result.outcome_rule})."
-    )
-    st.markdown(
-        "The recommended outcome is a recommendation of the tool. The final decision is the organisation's: it is "
-        "recorded by the responsible person or body, and the tool never fills these fields (SYS-03)."
+        "The position is the tool's reading of the determinations. The final decision is the organisation's: it is "
+        "recorded by the responsible person or body, and the tool never fills these fields (SYS-03). A decision that "
+        "departs from the position must say why."
     )
     gov = state.store()["governance"]
     with st.container(border=True):
@@ -273,5 +326,15 @@ def render_governance(cfg: ConfigBundle, result: EngineResult) -> None:
             state.seed(key, gov.get(GOVERNANCE_FIELDS[g.id]) or "")
             st.text_input(f"{g.field} `{g.id}`", key=key, help=workbook_text(g.id, "purpose", g.purpose),
                           on_change=_sync_governance)
+        state.seed("w.gov.follows", gov.get("follows_position") or "")
+        state.seed("w.gov.departure", gov.get("departure_reasons") or "")
+        st.radio("Relation to the overall position", list(FOLLOWS), key="w.gov.follows", format_func=FOLLOWS.get,
+                 on_change=_sync_governance, horizontal=True)
+        if st.session_state["w.gov.follows"] == "DEPARTS":
+            st.text_area("Reasons for departing from the overall position (required)", key="w.gov.departure",
+                         on_change=_sync_governance, height=90,
+                         help="Say which right or step the decision departs from, and why the organisation proceeds otherwise.")
+            if not (gov.get("departure_reasons") or "").strip():
+                st.warning("A decision that departs from the position needs reasons. The report flags the departure.")
     st.caption("To reassess later, save progress (left menu) and load the file in section 1.0 when the review date or a trigger arrives.")
     downloads(cfg, result, "governance")

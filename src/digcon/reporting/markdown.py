@@ -65,6 +65,71 @@ def element_origin(state: AssessmentState, element_id: str) -> str:
     return SET_BY[state.api_review(element_id)]
 
 
+def _argument(cfg: ConfigBundle, state: AssessmentState, positions) -> list[str]:
+    """RA-1: every determination of the argument, with its reasons, sources, evidence and any dissent."""
+    from digcon import argument as ra
+
+    out = ["## 7. Rights argument", "", cfg.argument.meta.disclaimer, ""]
+
+    def det(scope: str, step: str) -> None:
+        spec = cfg.argument.step(step)
+        rec = ra._record(state, scope, step)
+        reading = ra.read_step(state, cfg, scope, step)
+        if rec is None or not rec.code:
+            out.append(f"- **{spec.title}:** not determined")
+            return
+        opt = spec.option(rec.code)
+        status = {ra.CURRENT: "", ra.STALE: " _(out of date)_", ra.MISSING: " _(not recorded)_"}[reading.status]
+        out.append(f"- **{spec.title}:** {opt.label if opt else rec.code}{status} — {rec.reasons or 'no reasons'}"
+                   + (f" ({rec.author}, {rec.date})" if rec.author else ""))
+        for name, values in (("Sources", rec.sources), ("Evidence", rec.evidence)):
+            if values:
+                out.append(f"    - {name}: " + "; ".join(values))
+        for key, value in rec.extra.items():
+            out.append(f"    - {key.capitalize()}: {value}")
+        if rec.dissent.strip():
+            out.append(f"    - Dissent ({rec.dissent_by or 'author not stated'}): {rec.dissent}")
+
+    out += ["### The use as a whole", ""]
+    for step in ra.SYSTEM_STEPS:
+        det("SYSTEM", step)
+    out.append("")
+    out += ["### Screening", ""]
+    for card in cfg.argument.rights:
+        rec = ra._record(state, card.id, "S0")
+        code = rec.code if rec and rec.code else "not screened"
+        out.append(f"- {card.title}: {code.replace('_', ' ').lower()}" + (f" — {rec.reasons}" if rec and rec.reasons else ""))
+    out.append("")
+    for right in ra.engaged(state, cfg):
+        card = cfg.argument.right(right)
+        p = positions.rights[right]
+        out += [f"### {card.title} — {ra.LABELS[p.position]}", ""]
+        if card.status != "VERIFIED":
+            out.append("_Guidance on this right is a draft not yet verified by the research team._")
+            out.append("")
+        for step in ra.RIGHT_STEPS[1:]:
+            if step in p.required:
+                det(right, step)
+        arg = state.argument.rights.get(right)
+        if arg and arg.open_points.strip():
+            out.append(f"- **Open points:** {arg.open_points}")
+        if arg and arg.plan and arg.plan.action.strip():
+            plan = arg.plan
+            out.append(f"- **Revision plan:** {plan.action} (owner {plan.owner or 'not named'}, target "
+                       f"{plan.due_date or 'not set'}, {plan.status.lower().replace('_', ' ')})"
+                       + (f"; measures {', '.join(plan.measures)}" if plan.measures else ""))
+        out.append("")
+    if ra.engaged(state, cfg):
+        out += ["### Across rights", ""]
+        for step in ra.CROSS_STEPS:
+            det("CROSS", step)
+        out.append("")
+    out.append("The positions record whether each step was determined, reasoned, signed and current. They are not "
+               "a finding by the tool that the use is proportionate.")
+    out.append("")
+    return out
+
+
 def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> str:
     out: list[str] = []
     add = out.append
@@ -72,19 +137,30 @@ def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> st
     add(f"# {APP_TITLE} — assessment report")
     add("")
     add(f"- Assessment: **{state.assessment_id}**")
-    add(f"- Logic version: {result.workbook_version}")
+    add(f"- Logic version: {cfg.logic_version}")
     add(f"- Run: {result.run_id}, {result.timestamp.strftime('%Y-%m-%d %H:%M UTC')}")
     add("")
     add(f"> {DISCLAIMER}")
     add("")
 
-    add("## 1. Assessment findings: recommended outcome")
+    from digcon import argument as ra
+    from digcon.ui.labels import POSITION_TEXT
+
+    positions = ra.read(state, cfg, result)
+    add("## 1. Assessment findings: overall position")
     add("")
-    add(f"**{OUTCOME_TITLES[result.outcome]}** (rule {result.outcome_rule}, precedence O5 → O4 → O3 → O2 → O1)")
+    add(f"**{positions.label()}** — assessment {'complete' if positions.complete else 'incomplete'} · export code {positions.ocode}")
     add("")
-    add(OUTCOME_TEXT[result.outcome])
+    add(POSITION_TEXT[positions.overall])
     add("")
-    add(RECOMMENDATION_NOTE.replace("4.2 Governance decision", "section 9"))
+    out.extend(_table(["Right", "Position", "What sets it"], [
+        [cfg.argument.right(r).title, ra.LABELS[p.position], "; ".join(i.text for i in p.items) or "—"]
+        for r, p in positions.rights.items()
+    ]))
+    add(f"The export code is derived from the overall position. The workbook's own reading of steps 1–2 "
+        f"(rule {result.outcome_rule}) gives {OUTCOME_TITLES[result.outcome]}.")
+    add("")
+    add(RECOMMENDATION_NOTE.replace("4.2 Governance decision", "section 10"))
     if not result.closed:
         add("")
         add("**Audit defects: this run is not a valid closure.** " + "; ".join(result.audit_defects))
@@ -95,6 +171,20 @@ def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> st
 
     add("## 2. What to do next")
     add("")
+    every = positions.system + [i for p in positions.rights.values() for i in p.items]
+    for pos in (ra.STOP_CONFIRMED, ra.STOP_PENDING, ra.REVISION, ra.STOP_EXCLUDED, ra.INCOMPLETE, ra.CONDITIONS):
+        items = [i for i in every if i.position == pos]
+        if not items:
+            continue
+        add(f"### {ra.LABELS[pos]} ({len(items)})")
+        add("")
+        for i in items:
+            where = {"SYSTEM": "The use as a whole", "CROSS": "Across rights", "WORKBOOK": f"`{i.ref}`"}.get(
+                i.scope) or cfg.argument.right(i.scope).title
+            add(f"- {where}: {i.text}")
+        add("")
+    add("### Workbook findings in detail")
+    add("")
     if not any(getattr(result, attr) for attr, *_ in NEXT):
         add("Nothing open: no gap, remediation, condition, pending review or verification request.")
         add("")
@@ -102,9 +192,9 @@ def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> st
         findings = getattr(result, attr)
         if not findings:
             continue
-        add(f"### {title} ({len(findings)})")
+        add(f"#### {title} ({len(findings)})")
         add("")
-        add(f"_{effect}_")
+        add(f"_{effect} (workbook reading)_")
         add("")
         for f in findings:
             add(f"- `{f.rule_id}` {f.message}" + (f" ({', '.join(f.ids)})" if f.ids else ""))
@@ -167,19 +257,9 @@ def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> st
         add("No risk included.")
         add("")
 
-    add("## 7. Legal and procedural review")
+    out.extend(_argument(cfg, state, positions))
+    add("## 8. Legal and procedural checks")
     add("")
-    add("### Proportionality")
-    add("")
-    if result.prop_statuses:
-        out.extend(_table(["Rule", "Status", "Action"], [
-            [r, label(s), ", ".join(label(e) for e in result.rules[r].effects)] for r, s in result.prop_statuses.items()
-        ]))
-        add("The tool never concludes 'proportionate' or 'disproportionate': normative balancing stays with legal review.")
-        add("")
-    else:
-        add("No proportionality check applicable.")
-        add("")
     add("### Reviewer checks")
     add("")
     checks = sorted(eid for eid in {*state.elements, *state.api_suggestions}
@@ -209,7 +289,7 @@ def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> st
         add(f"Higher scrutiny raised by: {', '.join(scrutiny)}.")
         add("")
 
-    add("## 8. Safeguards, mitigation and stop conditions")
+    add("## 9. Safeguards, mitigation and stop conditions")
     add("")
     add("### Safeguards and mitigation")
     add("")
@@ -233,10 +313,10 @@ def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> st
             for h, v in opened.items()
         ]))
     else:
-        add("No stop condition opened (HS01–HS09). High risk alone never produces O5.")
+        add("No stop condition opened (HS01–HS10). High risk alone never produces O5.")
         add("")
 
-    add("## 9. Governance decision")
+    add("## 10. Governance decision")
     add("")
     fields = {g.id: g.field for g in cfg.questions.governance_fields}
     gov = [(gid, fields.get(gid, gid), getattr(state.governance, attr)) for gid, attr in GOVERNANCE]
@@ -245,8 +325,17 @@ def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> st
     else:
         add("Not recorded yet. It is filled by the responsible person or body, never by the tool.")
         add("")
+    follows = state.governance.follows_position
+    if follows == "DEPARTS":
+        reasons = (state.governance.departure_reasons or "").strip()
+        add(f"**The decision departs from the overall position ({positions.label()}).** "
+            + (f"Reasons: {reasons}" if reasons else "No reasons recorded: the departure is unexplained."))
+        add("")
+    elif follows == "FOLLOWS":
+        add(f"The decision follows the overall position ({positions.label()}).")
+        add("")
 
-    add("## 10. Audit trail")
+    add("## 11. Audit trail")
     add("")
     add(f"{len(result.audit_trail)} events, run {result.run_id}, logic version {result.workbook_version}. "
         "The JSON report holds every field of every event.")

@@ -28,6 +28,7 @@ from digcon.domain.enums import (
 from digcon.domain.models import (
     AllOf,
     AnswerIs,
+    ArgumentIs,
     AnswerProvided,
     AnswerUnresolved,
     AnyOf,
@@ -50,7 +51,7 @@ from digcon.domain.models import (
 from .calibration import risk_level
 from .result import RiskResult
 
-HARD_STOPS = tuple(f"HS0{i}" for i in range(1, 10))
+HARD_STOPS = tuple(f"HS{i:02d}" for i in range(1, 11))  # HS10: extension RA-1
 VERIFIED = (MitigationStatus.VERIFIED_EFFECTIVE, MitigationStatus.VERIFIED_INEFFECTIVE)
 
 
@@ -360,6 +361,8 @@ class Evaluator:
             return self._prop_is(c)
         if isinstance(c, SepIs):
             return self._sep_is(c)
+        if isinstance(c, ArgumentIs):
+            return self._argument_is(c)
         raise EngineError(f"unknown condition {type(c).__name__}")
 
     def _risk_match(self, c: RiskMatch) -> bool:
@@ -407,6 +410,19 @@ class Evaluator:
             if status is not None and status in c.is_:
                 hit = True
                 self._note(f"rule:{rid}")
+        return hit
+
+    def _argument_is(self, c: ArgumentIs) -> bool:
+        """RA-1: a current determination of an engaged right's argument. Reads no rule: no cycle."""
+        from digcon.argument import current_code, engaged
+        if self.cfg.argument is None:
+            return False
+        hit = False
+        for right in engaged(self.state, self.cfg):
+            for step in c.steps:
+                if current_code(self.state, self.cfg, right, step) in c.is_:
+                    hit = True
+                    self._note(f"argument:{right}.{step}", risk=self.cfg.argument.right(right).risk_id)
         return hit
 
     def _sep_is(self, c: SepIs) -> bool:

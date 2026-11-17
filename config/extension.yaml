@@ -1,0 +1,76 @@
+# DIGCON rights argument extension RA-1 — hand-written, NOT generated from the workbook.
+# Adds stop condition HS10 (Art. 52(1) CFR), raised by the threshold step of the argument per
+# right (config/argument.yaml, steps B3R and B3E). Until the workbook takes it in, it lives here
+# and is appended to config/rules.yaml at load time.
+meta:
+  extension_version: RA-1 (draft)
+  base_workbook_version: T17-v1.0.1
+  status: DRAFT — awaiting methodological validation and incorporation in the workbook
+  description: >-
+    HS10: the essence of a right is affected, or a right admitting no limitation is limited.
+    The positions per right and the overall position are read outside the engine (src/digcon/argument).
+
+rules:
+- id: HS10
+  insert_after: HS09
+  family: HS
+  order: 31
+  source: DIGCON RA-1; Art. 52(1) CFR
+  links_text: RISK-*; argument per right, threshold step B3
+  link_ids: []
+  actor: All roles
+  trigger_text: >-
+    The use limits a right that admits no limitation, or affects the essence of a Charter right,
+    AND no redesign of the use leaves that right, or its essence, intact
+  missing_treatment: >-
+    Regime or essence not determined = evidence gap in the argument; never inferred from risk level.
+  consequence_class: Hard stop
+  severity: HARD_STOP
+  severity_text: 4 — HARD STOP
+  flow_effect: >-
+    O5 only if all elements are established and the legal review is recorded. No balancing and no
+    mitigation can justify a limitation of an absolute right or of the essence of a right.
+  can_produce_o5: true
+  human_gate: REQUIRED
+  human_gate_text: 'YES — legal gate'
+  ra_note: >-
+    NEW (RA-1). Distinct from HS08: HS08 asks whether grave harm can be reduced to an acceptable
+    level; HS10 asks whether a limit exists that no reduction of harm can cross.
+  sep_implication: Stakeholder evidence may show how the use bears on the core of the right
+  mitigation_allowed: 'NO'
+  mitigation_allowed_text: 'NO — a mitigation plan cannot cure a limitation of the essence'
+  mitigation_action: Redesign of the use only, followed by a new version of the assessment
+  remediability: Non-remediable once all HS10 elements are met; a redesigned use is a new assessment
+  related_text: HS08
+  related_ids: [HS08]
+  encoding:
+    kind: MANUAL
+    inputs: []
+    cases:
+    - when:
+        any:
+        - {argument: ANY_RIGHT, steps: [B3R, B3E], is: [NO_LIMITATION, AFFECTED]}
+        - {element: HS10.E1, is: [MET, UNCERTAIN]}
+        - {element: HS10.E2, is: [MET, UNCERTAIN]}
+      effects: [ROUTE_TO_HS, HUMAN_LEGAL_REVIEW]
+    gap:
+      all:
+      - {rule: HS10, fired: true}
+      - {hs: HS10, is: [UNCERTAIN]}
+    gap_effects: [EVIDENCE_GAP, HUMAN_LEGAL_REVIEW]
+    elements:
+    - id: HS10.E1
+      text: >-
+        The use limits a right that admits no limitation, or affects the essence of a Charter right
+      source: MANUAL
+      legal_judgement: true
+    - id: HS10.E2
+      text: No redesign of the use leaves that right, or its essence, intact
+      source: MANUAL
+      legal_judgement: true
+      non_remediability: true
+    assumptions: [AS-005, AS-006, AS-017]
+    note: >-
+      Opened by an argument that records a right admitting no limitation or an affected essence (B3),
+      or by the elements themselves. The recorded review is the reviewer's assessment; HS10 is the
+      legal determination.

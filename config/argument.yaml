@@ -1,0 +1,556 @@
+# DIGCON rights argument RA-1 (draft) — hand-written, NOT generated from the workbook.
+# Step 3 of the assessment as an argument per right: screening, the use as a whole (A1–A3),
+# the argument for each engaged right (B1–B6, with B7 open points), and the steps across rights
+# (C1–C2). See the comparative note of 16–17 November 2026 (decisions 1–3).
+#
+# The research team edits the wording here without touching code. Step ids and option codes
+# are read by the code; change them only together with src/digcon/argument/.
+#
+# Option effects:
+#   CONTINUE     the argument goes on to the next step
+#   FAVOURABLE   this step supports the use
+#   CONDITIONS   supports the use only while stated measures stay in place
+#   NOT_ENGAGED  the right drops out of the argument (reasons kept)
+#   REVISION     revision required: the use must change before it can proceed
+#   STOP         a stop condition must be reviewed by a lawyer (refers_to names it)
+#   UNDETERMINED cannot be determined on the present evidence: an evidence gap
+
+meta:
+  version: RA-1 (draft)
+  status: DRAFT — awaiting methodological validation and incorporation in the workbook
+  disclaimer: >-
+    Guidance on the content of rights orients the assessment. It is not a statement of the law,
+    and every determination remains the assessor's own.
+
+steps:
+- id: S0
+  level: RIGHT
+  title: Screening
+  question: Is this right engaged by the use?
+  note: >-
+    Mark a right as engaged when the use could affect it for any of the persons identified,
+    even if the effect seems small. A right marked "not engaged" needs reasons: this is where an
+    assessment can hide what it does not examine.
+  mistake: Excluding a right because the risk looks low. A low risk is weighed later, not screened out.
+  example: A CV-ranking tool engages Article 21 (proxies for protected traits) and Article 8 (processing of applicant data).
+  options:
+  - {code: ENGAGED, label: "Engaged — the use may affect this right", effect: CONTINUE}
+  - {code: NOT_ENGAGED, label: "Not engaged — reasons below", effect: NOT_ENGAGED}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: A1
+  level: SYSTEM
+  title: Legality
+  question: >-
+    Is the use provided for by law, and is that law accessible, foreseeable and protective
+    against arbitrariness?
+  note: >-
+    A legal basis in the GDPR sense is necessary but not enough. Ask whether the law tells
+    affected persons, with reasonable precision, that and how such a system may be used on them.
+  mistake: Citing the legal basis for the processing as if it settled the quality of the law.
+  example: A statute that allows "automated tools" in benefit control without saying which data or criteria may be used.
+  options:
+  - {code: LAWFUL_QUALITY, label: "Provided for by law of sufficient quality", effect: FAVOURABLE}
+  - {code: QUALITY_DEFICIENT, label: "A legal basis exists but its quality is deficient", effect: REVISION}
+  - {code: NO_BASIS, label: "No legal basis", effect: STOP, refers_to: HS02}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: A2
+  level: SYSTEM
+  title: Legitimate aim
+  question: >-
+    Does the use pursue an objective of general interest recognised by the Union, or protect the
+    rights and freedoms of others?
+  note: >-
+    State the aim in the terms of Article 52(1). Efficiency or cost saving may be part of the
+    aim, but on its own it rarely justifies an interference with a fundamental right.
+  mistake: Restating the system's function ("to rank applications") instead of the aim it serves.
+  example: Consistent application of published criteria in recruitment, serving equal access to employment.
+  options:
+  - {code: LEGITIMATE, label: "A legitimate aim, stated below", effect: FAVOURABLE}
+  - {code: NOT_LEGITIMATE, label: "The aim is not legitimate", effect: STOP, refers_to: HS01}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: A3
+  level: SYSTEM
+  title: Suitability
+  question: Does the use, as deployed, actually serve the aim?
+  note: >-
+    Rely on evidence from this deployment: tests, pilot results, error rates, how staff use the
+    output. A system that barely serves the aim cannot justify much interference (see B6).
+  mistake: Relying on the provider's general performance claims without checking them in this context.
+  example: An override audit showing recruiters use the ranking and correct it in 14% of cases.
+  options:
+  - {code: SERVES, label: "Serves the aim, on the evidence below", effect: FAVOURABLE}
+  - {code: DOES_NOT_SERVE, label: "Does not serve the aim, or serves it too little", effect: REVISION}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: B1
+  level: RIGHT
+  title: The right in context
+  question: Which dimension of the right is engaged, and whose right is it?
+  note: Use the card on the right. Name the holders concretely (applicants, claimants, pupils), not "users".
+  mistake: Describing the right in the abstract instead of the part of it this use touches.
+  example: "Article 21: equal treatment in access to employment of applicants, including indirect discrimination through proxies."
+  options:
+  - {code: DESCRIBED, label: "Described below", effect: CONTINUE}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: B2
+  level: RIGHT
+  title: Interference
+  question: Does the use interfere with the right, and how?
+  note: >-
+    Describe each interference in words: what happens, to whom, how often, how reversibly. The
+    risk ratings from the register are shown as evidence of its intensity; they do not replace the
+    description. Say where the affected persons stand towards the deployer (dependency, no way to opt out).
+  mistake: Answering with a risk level ("medium") instead of describing what the use does to people.
+  example: Applicants with career breaks are ranked lower; most of them are women; they cannot see or contest the ranking.
+  options:
+  - {code: INTERFERES, label: "The use interferes with the right", effect: CONTINUE}
+  - {code: NO_INTERFERENCE, label: "No interference found — reasons below", effect: NOT_ENGAGED}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: B3R
+  level: RIGHT
+  title: Threshold — limitation regime
+  question: Does the right admit any limitation?
+  note: >-
+    Most Charter rights are qualified. A few are commonly treated as admitting no limitation
+    (for example Article 4); the status of Article 1 is debated. A right that admits no limitation
+    is not balanced: any interference goes to the stop review.
+  mistake: Treating a seriousness judgement as a regime question. Seriousness belongs to B6.
+  example: Article 21 is qualified; indirect discrimination may be objectively justified.
+  options:
+  - {code: QUALIFIED, label: "Qualified — may be limited under Article 52(1)", effect: CONTINUE}
+  - {code: NO_LIMITATION, label: "Admits no limitation", effect: STOP, refers_to: HS10}
+  - {code: UNDETERMINED, label: "Cannot yet determine — legal advice needed", effect: UNDETERMINED}
+
+- id: B3E
+  level: RIGHT
+  title: Threshold — essence
+  question: Does the use affect the essence of the right?
+  note: >-
+    Ask whether the right keeps substantive content for the persons affected, not whether the
+    harm is serious. The card says what the case law has held, where it has said anything.
+  mistake: Concluding "essence affected" because the harm is grave. Gravity is weighed in B6.
+  example: Generalised access to the content of communications compromises the essence of Article 7 (Schrems I).
+  options:
+  - {code: INTACT, label: "The essence remains intact", effect: CONTINUE}
+  - {code: AFFECTED, label: "The essence is affected", effect: STOP, refers_to: HS10}
+  - {code: UNDETERMINED, label: "Cannot yet determine — legal advice needed", effect: UNDETERMINED}
+
+- id: B4
+  level: RIGHT
+  title: Necessity
+  question: >-
+    Could the aim be achieved as effectively with less interference with this right: no AI, a
+    narrower use, fewer data, fewer persons, a shorter period?
+  note: >-
+    Compare real options for this right. An alternative is relevant if it is practicable and
+    serves the aim about as well. The alternatives review in 1.4 is evidence here.
+  mistake: Rejecting alternatives only because they cost more, without saying how much more.
+  example: Keyword filtering was tested and was less accurate; manual screening of 4,000 CVs a month is not practicable.
+  options:
+  - {code: NO_LESS_INTRUSIVE, label: "No less intrusive alternative of equal effectiveness", effect: FAVOURABLE}
+  - {code: LESS_INTRUSIVE_EXISTS, label: "A less intrusive alternative exists", effect: REVISION}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: B5
+  level: RIGHT
+  title: Guarantees and remedies
+  question: >-
+    Are the guarantees for this right adequate: human oversight, information, contestation, an
+    effective remedy, and the measures that reduce the interference?
+  note: >-
+    Only measures verified effective count. Say which measures must stay in place while the system
+    is used: they become conditions of the position. The measures are tagged necessity, safeguard
+    or remedy in 3.7.
+  mistake: Listing policies instead of showing that they work for the persons affected.
+  example: Every ranking is reviewed by a recruiter with authority to override; rejected applicants can request human reassessment.
+  options:
+  - {code: ADEQUATE, label: "Adequate for this right", effect: FAVOURABLE}
+  - {code: ADEQUATE_WITH_CONDITIONS, label: "Adequate while the measures below stay in place", effect: CONDITIONS}
+  - {code: INADEQUATE, label: "Inadequate", effect: REVISION}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: B6
+  level: RIGHT
+  title: Balancing in the strict sense
+  question: >-
+    Does the aim, to the degree the use actually achieves it, outweigh the interference that
+    remains after verified guarantees?
+  note: >-
+    Weigh concretely: the importance of the aim here (A2), how far the use achieves it (A3), and
+    the intensity of the remaining interference (B2, with the residual rating). Effects that fall
+    more heavily on a vulnerable group weigh more. The tool records your reasons; it does not weigh.
+  mistake: Concluding without reasons, or with reasons that only repeat the conclusion ("proportionate", "acceptable").
+  example: The interference is limited and reversible and the safeguards are verified; the aim is served to a material degree.
+  options:
+  - {code: AIM_PREVAILS, label: "The aim, as achieved, outweighs the remaining interference", effect: FAVOURABLE}
+  - {code: INTERFERENCE_PREVAILS, label: "The remaining interference outweighs the aim", effect: REVISION, legal_review: true}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: C1
+  level: CROSS
+  title: Cumulative interference
+  question: >-
+    Do the same persons or groups bear interferences with several rights, and does the total change
+    any conclusion reached in B6?
+  note: Asked when two or more rights are engaged. Look at who appears in several arguments.
+  mistake: Assuming that several acceptable interferences add up to an acceptable whole.
+  example: Applicants with disabilities are ranked lower (Article 21) and have less access to the contestation route (Article 47).
+  options:
+  - {code: NO_CHANGE, label: "The total does not change the conclusions", effect: FAVOURABLE}
+  - {code: CHANGES, label: "The total changes a conclusion", effect: REVISION}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+- id: C2
+  level: CROSS
+  title: Conflicts between rights
+  question: >-
+    Are the rights engaged in conflict with rights of others, including the deployer's (Articles 16
+    and 17), and how is the conflict resolved?
+  note: >-
+    The deployer's interests enter here as rights to be balanced, not as risks. Typical case:
+    trade secrets against the information an affected person needs to contest a decision.
+  mistake: Treating the deployer's freedom to conduct a business as an affected right of applicants.
+  example: The ranking criteria are disclosed to applicants in a summary; the model weights stay confidential.
+  options:
+  - {code: NO_CONFLICT, label: "No conflict between rights", effect: FAVOURABLE}
+  - {code: WEIGHED, label: "Conflict identified and resolved as explained below", effect: FAVOURABLE}
+  - {code: UNDETERMINED, label: "Cannot yet determine", effect: UNDETERMINED}
+
+rights:
+- id: CFR-01
+  risk_id: RISK-01
+  title: Article 1, human dignity, and the Article 2 TEU values
+  protects: >-
+    Human dignity is inviolable and must be respected and protected. According to the Explanations,
+    it is also the basis of all other Charter rights. Grouped here with the values of Article 2 TEU:
+    freedom, democracy, equality, the rule of law, human rights.
+  echr: None as such. The Strasbourg court treats dignity as underlying the Convention as a whole.
+  regime: >-
+    The Explanations state that none of the Charter rights may be used to harm the dignity of
+    another person, and that dignity must be respected even where a right is restricted. Whether
+    Article 1 is a free-standing absolute right or a principle informing the other rights is debated.
+  essence: Not separately defined. Dignity is often read as part of the essence of other rights.
+  interferences:
+  - Treating persons as objects of a decision process, with no consideration of their individual situation.
+  - Manipulative or exploitative techniques, partly prohibited by Article 5 AI Act.
+  - Classification that stigmatises, for example fraud risk scores attached to persons or neighbourhoods.
+  - Decisions on basic needs taken without any human contact.
+  questions:
+  - Does the use treat persons as subjects with their own situation, or only as data points?
+  - Is any affected person exposed to humiliating or degrading treatment through the outcome or the process?
+  - Does the use affect the democratic or rule-of-law conditions in which other rights are exercised?
+  sources:
+  - Explanations relating to the Charter, Article 1
+  - FRA Charterpedia, Article 1
+  - Omega, C-36/02 (2004), dignity as a general principle of EU law
+  - Netherlands v Parliament and Council, C-377/98 (2001), dignity as a fundamental right
+  - ECtHR, Pretty v United Kingdom (2002)
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-07
+  risk_id: RISK-07
+  title: Article 7, respect for private and family life
+  protects: >-
+    Private and family life, home and communications. Private life covers identity, personal
+    development, relations with others and, in the Strasbourg case law, aspects of professional life.
+  echr: Article 8 ECHR; same meaning and scope under Article 52(3).
+  regime: Qualified, under Article 52(1) and the conditions of Article 8(2) ECHR.
+  essence: >-
+    Generalised access to the content of electronic communications compromises the essence of
+    Article 7 (Schrems I); retention of traffic data without content did not (Digital Rights Ireland).
+  interferences:
+  - Profiling and the inference of sensitive traits (health, orientation, beliefs) from ordinary data.
+  - Monitoring of workers, students or benefit claimants.
+  - Biometric identification or categorisation.
+  - Retention of personal data or derived scores beyond the purpose.
+  questions:
+  - What does the system learn or infer about a person that the person did not disclose?
+  - Could the aim be reached with less monitoring, fewer persons or a shorter period?
+  - Do affected persons know they are monitored or profiled, and can they object?
+  sources:
+  - Explanations, Article 7
+  - FRA Charterpedia, Article 7
+  - Digital Rights Ireland, C-293/12 and C-594/12 (2014)
+  - Schrems, C-362/14 (2015)
+  - ECtHR, S. and Marper v United Kingdom [GC] (2008)
+  - ECtHR, Bărbulescu v Romania [GC] (2017)
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-08
+  risk_id: RISK-08
+  title: Article 8, protection of personal data
+  protects: >-
+    The protection of personal data. Article 8(2) sets its own conditions: fair processing,
+    specified purposes, consent or another legitimate basis laid down by law, access and
+    rectification. Article 8(3) requires control by an independent authority.
+  echr: >-
+    No separate article; personal data are protected under Article 8 ECHR. The Explanations refer
+    to Article 16 TFEU, the data protection directive (now the GDPR) and Convention 108.
+  regime: Qualified, under Article 52(1), read with the conditions in Article 8(2).
+  essence: >-
+    In Digital Rights Ireland the essence was found respected because the retention rules required
+    data security principles. The case law gives few other markers.
+  interferences:
+  - Reuse of personal data for training or for a purpose other than collection.
+  - Automated decisions with legal or similarly significant effects (Article 22 GDPR), including scores a third party relies on.
+  - Processing of special categories, directly or by inference.
+  - Opacity that defeats the rights of access, rectification and objection.
+  questions:
+  - Is each data category needed for the aim, and for how long?
+  - Does a score or ranking determine the decision in practice, even if a person signs it?
+  - Can the person obtain meaningful information about the logic involved?
+  sources:
+  - Explanations, Article 8
+  - FRA Charterpedia, Article 8
+  - Digital Rights Ireland, C-293/12 and C-594/12 (2014)
+  - SCHUFA Holding (Scoring), C-634/21 (2023)
+  - Ligue des droits humains, C-817/19 (2022)
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-10
+  risk_id: RISK-10
+  title: Article 10, freedom of thought, conscience and religion
+  protects: >-
+    Freedom of thought, conscience and religion, including the freedom to change religion or belief
+    and to manifest it in worship, teaching, practice and observance. Article 10(2) recognises
+    conscientious objection under national laws.
+  echr: Article 9 ECHR; same meaning and scope for Article 10(1).
+  regime: >-
+    The inner freedom to hold a thought or belief (forum internum) is treated as admitting no
+    limitation. Its manifestation is qualified, under the conditions of Article 9(2) ECHR.
+  essence: Not defined by the Court of Justice. The forum internum is the usual candidate.
+  interferences:
+  - Inference of religion or belief from behaviour, names, purchases or location.
+  - Systems that infer emotions or inner states (partly prohibited in work and education by Article 5 AI Act).
+  - Scheduling or dress-code enforcement that bears on religious practice.
+  - Profiling of persons by presumed beliefs in security uses.
+  questions:
+  - Does the system infer or act on beliefs, even indirectly?
+  - Does the use reach the forum internum, which would raise the threshold question at B3?
+  - Is a neutrality or uniform rule applied in a way that falls only on some believers?
+  sources:
+  - Explanations, Article 10
+  - FRA Charterpedia, Article 10
+  - ECtHR, Eweida and Others v United Kingdom (2013)
+  - Achbita, C-157/15 (2017)
+  - WABE and MH Müller Handel, C-804/18 and C-341/19 (2021)
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-11
+  risk_id: RISK-11
+  title: Article 11, freedom of expression and information
+  protects: >-
+    Freedom to hold opinions and to receive and impart information and ideas without interference
+    by public authority and regardless of frontiers. Article 11(2) protects media freedom and pluralism.
+  echr: Article 10 ECHR; same meaning and scope.
+  regime: Qualified, under the conditions of Article 10(2) ECHR.
+  essence: >-
+    Not defined in general terms. In Poland v Parliament and Council the Court found the essence
+    respected for upload filters because the provision required safeguards against blocking lawful content.
+  interferences:
+  - Automated moderation, filtering or blocking of content.
+  - Ranking and recommendation that shape access to information.
+  - Chilling effects where people know their expression is monitored or scored.
+  - Automated answers in public services that withhold reasons or information.
+  questions:
+  - Can the system distinguish lawful from unlawful content in this context, and with what error rates?
+  - Does a person whose content is removed or demoted learn of it and have a way to challenge it?
+  - Does the use reduce the diversity of information reaching a group?
+  sources:
+  - Explanations, Article 11
+  - FRA Charterpedia, Article 11
+  - Poland v Parliament and Council, C-401/19 (2022)
+  - Glawischnig-Piesczek, C-18/18 (2019)
+  - ECtHR, Delfi AS v Estonia [GC] (2015)
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-15
+  risk_id: RISK-15
+  title: Article 15, freedom to choose an occupation and right to engage in work
+  protects: >-
+    The right to engage in work and to pursue a freely chosen or accepted occupation; for Union
+    citizens, the freedom to seek work, work, establish themselves and provide services in any
+    Member State; for authorised third-country nationals, equivalent working conditions.
+  echr: None. The Explanations refer to Article 1(2) of the European Social Charter.
+  regime: Qualified, under Article 52(1).
+  essence: Not defined in the case law.
+  interferences:
+  - Automated screening that excludes candidates before any human review.
+  - "Algorithmic management: allocation of tasks, evaluation, sanctions, deactivation on platforms."
+  - Scores that follow a person across employers or sectors.
+  questions:
+  - Does the system close access to an occupation, or only order candidates for a human decision?
+  - Can a worker or candidate learn why they were excluded or sanctioned and obtain human review?
+  - Do the rules on algorithmic management in Directive (EU) 2024/2831 apply to this use?
+  sources:
+  - Explanations, Article 15
+  - FRA Charterpedia, Article 15
+  - Directive (EU) 2024/2831 on platform work, Chapter III
+  - Case law on AI uses under Article 15 is thin
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-16
+  risk_id: RISK-16
+  title: Article 16, freedom to conduct a business
+  protects: >-
+    The freedom to conduct a business, in accordance with Union law and national laws and
+    practices: economic and commercial activity, freedom of contract, free competition.
+  echr: None.
+  regime: Qualified, and broadly so; it may be subject to a wide range of public interventions in the general interest.
+  essence: The Court has asked whether a measure leaves the substance of the freedom intact, without a general definition.
+  interferences:
+  - Automated decisions on credit, insurance or platform access affecting small businesses.
+  - Ranking or delisting of business users.
+  - "Mainly enters at C2: the deployer's freedom and trade secrets weighed against the rights of affected persons."
+  questions:
+  - Which interest of the deployer is invoked against an affected right (trade secrets, efficiency, cost)?
+  - Can the information an affected person needs be given without disclosing the protected secret?
+  sources:
+  - Explanations, Article 16
+  - FRA Charterpedia, Article 16
+  - Sky Österreich, C-283/11 (2013)
+  - Dun & Bradstreet Austria, C-203/22 (2025)
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-17
+  risk_id: RISK-17
+  title: Article 17, right to property
+  protects: >-
+    The right to own, use, dispose of and bequeath lawfully acquired possessions; deprivation only
+    in the public interest, under conditions provided by law, with fair compensation in good time.
+    Article 17(2) protects intellectual property.
+  echr: Article 1 of Protocol No 1; same meaning and scope.
+  regime: Qualified. Use of property may be regulated by law in so far as necessary for the general interest.
+  essence: Not defined in general terms.
+  interferences:
+  - Automated decisions that withdraw, reduce or recover benefits, credit or assets.
+  - Pricing or underwriting that changes the terms on which persons obtain goods or insurance.
+  - Use of protected works in training or output (Article 17(2)), mostly a provider-side question.
+  questions:
+  - Does the system decide on possessions directly (recovery, seizure, refusal), or inform a human decision?
+  - Are wrong decisions reversible in time, with restitution?
+  - "Where intellectual property is engaged, whose is it: the affected persons' or the deployer's (then C2)?"
+  sources:
+  - Explanations, Article 17
+  - FRA Charterpedia, Article 17
+  - Promusicae, C-275/06 (2008)
+  - Scarlet Extended, C-70/10 (2011)
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-21
+  risk_id: RISK-21
+  title: Article 21, non-discrimination
+  protects: >-
+    Equal treatment without discrimination on any ground, including those listed: sex, race,
+    colour, ethnic or social origin, genetic features, language, religion or belief, political or
+    other opinion, membership of a national minority, property, birth, disability, age, sexual
+    orientation. The list is open. Article 21(2) covers nationality within the scope of the Treaties.
+  echr: >-
+    Article 14 ECHR, and Protocol 12 for the States that ratified it. According to the Explanations,
+    Article 21(1) also draws on Article 19 TFEU and on Article 11 of the Oviedo Convention.
+  regime: >-
+    Qualified. Under the equal treatment directives, indirect discrimination can be objectively
+    justified by a legitimate aim pursued by appropriate and necessary means; direct discrimination
+    admits only the exceptions the directives provide.
+  essence: Not defined in the case law.
+  interferences:
+  - Indirect discrimination through proxies (postcode, career breaks, language) in scoring or ranking.
+  - Different error rates across groups in identification or classification.
+  - Training data that reproduce past unequal treatment.
+  - Discrimination by association.
+  questions:
+  - Were outcomes and error rates tested across the groups identified in B2, and with what results?
+  - Which input variables could act as proxies, and was their removal assessed (B4)?
+  - Can an affected person learn that a ranking or score contributed to the decision and contest it (B5)?
+  - Does the aim require a difference of treatment at all, or only the system's convenience (B6)?
+  sources:
+  - Explanations, Article 21
+  - FRA Charterpedia, Article 21
+  - CHEZ Razpredelenie Bulgaria, C-83/14 (2015)
+  - Test-Achats, C-236/09 (2011)
+  - Ligue des droits humains, C-817/19 (2022)
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-35
+  risk_id: RISK-35
+  title: Article 35, health care
+  protects: >-
+    Access to preventive health care and to medical treatment under the conditions established by
+    national laws and practices; a high level of human health protection in all Union policies.
+  echr: None directly. The Explanations refer to Articles 11 and 13 of the European Social Charter.
+  regime: >-
+    The first sentence grants access under national conditions; the second states a principle
+    (Article 52(5)). Say which part is engaged.
+  essence: Not defined in the case law.
+  interferences:
+  - Triage or prioritisation that delays or denies access to care.
+  - Diagnostic or treatment support with different error rates across groups.
+  - Eligibility decisions for reimbursement or coverage.
+  - Health insurance pricing (an Article 27 use).
+  questions:
+  - Does the output change who receives care, or when?
+  - Is clinical judgement free to depart from the output, and does it in practice?
+  - Were performance and errors tested on the patient population actually served?
+  sources:
+  - Explanations, Article 35
+  - FRA Charterpedia, Article 35
+  - Regulation (EU) 2025/327 on the European Health Data Space
+  - Case law on Article 35 in AI uses is thin
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
+
+- id: CFR-47
+  risk_id: RISK-47
+  title: Article 47, effective remedy and fair trial
+  protects: >-
+    An effective remedy before a tribunal for everyone whose rights and freedoms under Union law are
+    violated; a fair and public hearing within a reasonable time by an independent and impartial
+    tribunal; legal aid where needed.
+  echr: >-
+    Articles 13 and 6(1) ECHR. Article 47 is broader: the remedy is before a tribunal, and the
+    fair-trial guarantees are not limited to civil rights and criminal charges.
+  regime: Qualified, under Article 52(1).
+  essence: >-
+    Legislation giving no possibility of pursuing legal remedies to obtain access to, rectification
+    or erasure of one's data does not respect the essence of Article 47 (Schrems I).
+  interferences:
+  - Decisions whose reasons cannot be given, so the person cannot challenge them.
+  - Complaint channels that end inside the deployer, with no route to an independent body.
+  - AI support in courts or administrative review that affects impartiality or equality of arms.
+  questions:
+  - Can the person learn the grounds of the decision in enough detail to contest it?
+  - Is there a route to an independent body, and does the deployer's own procedure lead to it?
+  - Does any confidentiality (security, trade secrets) limit the reasons given, and how is it compensated?
+  sources:
+  - Explanations, Article 47
+  - FRA Charterpedia, Article 47
+  - Schrems, C-362/14 (2015)
+  - ZZ, C-300/11 (2013)
+  - Ligue des droits humains, C-817/19 (2022)
+  status: DRAFT
+  verified_by: ""
+  verified_on: ""
