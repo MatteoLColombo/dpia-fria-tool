@@ -229,6 +229,8 @@ def _card(card) -> None:
         st.markdown("**Typical interferences in AI uses**\n" + "\n".join(f"- {x}" for x in card.interferences))
         st.markdown("**Questions to ask**\n" + "\n".join(f"- {x}" for x in card.questions))
         st.markdown("**Sources**\n" + "\n".join(f"- {x}" for x in card.sources))
+        if card.source_check:
+            st.caption(f"Source check: {card.source_check}")
         if card.verified_by:
             st.caption(f"Verified by {card.verified_by} on {card.verified_on}.")
 

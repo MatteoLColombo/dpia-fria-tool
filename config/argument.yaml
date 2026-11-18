@@ -250,6 +250,7 @@ rights:
   - Omega, C-36/02 (2004), dignity as a general principle of EU law
   - Netherlands v Parliament and Council, C-377/98 (2001), dignity as a fundamental right
   - ECtHR, Pretty v United Kingdom (2002)
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Explanations (FRA reproduction), Omega and C-377/98 confirmed in secondary sources. Pretty not checked against HUDOC."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -281,6 +282,7 @@ rights:
   - Schrems, C-362/14 (2015)
   - ECtHR, S. and Marper v United Kingdom [GC] (2008)
   - ECtHR, Bărbulescu v Romania [GC] (2017)
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Explanations (\"communications\"; Article 52(3) correspondence), Digital Rights Ireland para. 39 and Schrems para. 94 confirmed in secondary sources and the Court's press release. Marper and Bărbulescu not checked."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -312,8 +314,9 @@ rights:
   - Explanations, Article 8
   - FRA Charterpedia, Article 8
   - Digital Rights Ireland, C-293/12 and C-594/12 (2014)
-  - SCHUFA Holding (Scoring), C-634/21 (2023)
+  - SCHUFA Holding (Scoring), C-634/21 (2023), a credit score as an automated decision under Article 22 GDPR
   - Ligue des droits humains, C-817/19 (2022)
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Digital Rights Ireland para. 40, SCHUFA and Ligue des droits humains confirmed in secondary sources."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -327,8 +330,9 @@ rights:
     conscientious objection under national laws.
   echr: Article 9 ECHR; same meaning and scope for Article 10(1).
   regime: >-
-    The inner freedom to hold a thought or belief (forum internum) is treated as admitting no
-    limitation. Its manifestation is qualified, under the conditions of Article 9(2) ECHR.
+    The inner freedom to hold a thought or belief (forum internum) is generally treated as admitting no
+    limitation, though its scope is narrow and some authors argue the Strasbourg court still weighs
+    competing considerations. Its manifestation is qualified, under the conditions of Article 9(2) ECHR.
   essence: Not defined by the Court of Justice. The forum internum is the usual candidate.
   interferences:
   - Inference of religion or belief from behaviour, names, purchases or location.
@@ -345,6 +349,7 @@ rights:
   - ECtHR, Eweida and Others v United Kingdom (2013)
   - Achbita, C-157/15 (2017)
   - WABE and MH Müller Handel, C-804/18 and C-341/19 (2021)
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Article 52(3) correspondence, Achbita and WABE confirmed; forum internum confirmed in the literature, with the nuance now in the card. Eweida not checked against HUDOC."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -358,8 +363,10 @@ rights:
   echr: Article 10 ECHR; same meaning and scope.
   regime: Qualified, under the conditions of Article 10(2) ECHR.
   essence: >-
-    Not defined in general terms. In Poland v Parliament and Council the Court found the essence
-    respected for upload filters because the provision required safeguards against blocking lawful content.
+    Not defined in general terms. In Poland v Parliament and Council the Court upheld filtering under
+    Article 17 of Directive 2019/790 because the provision requires safeguards against blocking lawful
+    content. Commentators read the judgment as finding the essence respected, but its reasoning on the
+    essence is brief and contested.
   interferences:
   - Automated moderation, filtering or blocking of content.
   - Ranking and recommendation that shape access to information.
@@ -375,6 +382,7 @@ rights:
   - Poland v Parliament and Council, C-401/19 (2022)
   - Glawischnig-Piesczek, C-18/18 (2019)
   - ECtHR, Delfi AS v Estonia [GC] (2015)
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Outcome of C-401/19 confirmed; its reasoning on the essence not confirmed (read paras. 80–99). Glawischnig-Piesczek and Delfi not checked."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -386,7 +394,10 @@ rights:
     The right to engage in work and to pursue a freely chosen or accepted occupation; for Union
     citizens, the freedom to seek work, work, establish themselves and provide services in any
     Member State; for authorised third-country nationals, equivalent working conditions.
-  echr: None. The Explanations refer to Article 1(2) of the European Social Charter.
+  echr: >-
+    None. According to the Explanations, Article 15(1) draws on the case law of the Court of Justice
+    (Nold, 4/73; Hauer, 44/79; Keller, 234/85), Article 1(2) of the European Social Charter and point 4
+    of the 1989 Community Charter of the Fundamental Social Rights of Workers.
   regime: Qualified, under Article 52(1).
   essence: Not defined in the case law.
   interferences:
@@ -402,6 +413,7 @@ rights:
   - FRA Charterpedia, Article 15
   - Directive (EU) 2024/2831 on platform work, Chapter III
   - Case law on AI uses under Article 15 is thin
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Explanations confirmed (FRA reproduction); Directive 2024/2831, Chapter III = Articles 7–15, confirmed."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -414,7 +426,9 @@ rights:
     practices: economic and commercial activity, freedom of contract, free competition.
   echr: None.
   regime: Qualified, and broadly so; it may be subject to a wide range of public interventions in the general interest.
-  essence: The Court has asked whether a measure leaves the substance of the freedom intact, without a general definition.
+  essence: >-
+    No general definition. In Sky Österreich the Court found that the limitation did not affect the
+    essential content of the freedom (to be checked against the text of the judgment).
   interferences:
   - Automated decisions on credit, insurance or platform access affecting small businesses.
   - Ranking or delisting of business users.
@@ -425,8 +439,9 @@ rights:
   sources:
   - Explanations, Article 16
   - FRA Charterpedia, Article 16
-  - Sky Österreich, C-283/11 (2013)
-  - Dun & Bradstreet Austria, C-203/22 (2025)
+  - Sky Österreich, C-283/11 (2013), "a broad range of interventions on the part of public authorities" (para. 46)
+  - Dun & Bradstreet Austria, C-203/22 (27 February 2025), trade secrets weighed against the right to an explanation of an automated decision
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Sky Österreich para. 46 and Dun & Bradstreet confirmed; the essence point rests on an annotation only."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -454,6 +469,7 @@ rights:
   - FRA Charterpedia, Article 17
   - Promusicae, C-275/06 (2008)
   - Scarlet Extended, C-70/10 (2011)
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Article 52(3) correspondence confirmed. Promusicae and Scarlet Extended not checked."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -487,9 +503,10 @@ rights:
   sources:
   - Explanations, Article 21
   - FRA Charterpedia, Article 21
-  - CHEZ Razpredelenie Bulgaria, C-83/14 (2015)
-  - Test-Achats, C-236/09 (2011)
-  - Ligue des droits humains, C-817/19 (2022)
+  - CHEZ Razpredelenie Bulgaria, C-83/14 (2015), protection of persons affected by discrimination against an ethnic group they do not belong to
+  - Test-Achats, C-236/09 (2011), sex as an actuarial factor in insurance
+  - Ligue des droits humains, C-817/19 (2022), limits on self-learning systems applying pre-determined criteria
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Explanations confirmed (FRA reproduction); Test-Achats, CHEZ (persons affected without belonging to the group) and Ligue des droits humains (self-learning systems) confirmed in secondary sources."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -500,7 +517,9 @@ rights:
   protects: >-
     Access to preventive health care and to medical treatment under the conditions established by
     national laws and practices; a high level of human health protection in all Union policies.
-  echr: None directly. The Explanations refer to Articles 11 and 13 of the European Social Charter.
+  echr: >-
+    None directly. According to the Explanations, the article is based on Article 168 TFEU (ex Article
+    152 EC) and on Articles 11 and 13 of the European Social Charter; its second sentence takes over Article 168(1).
   regime: >-
     The first sentence grants access under national conditions; the second states a principle
     (Article 52(5)). Say which part is engaged.
@@ -519,6 +538,7 @@ rights:
   - FRA Charterpedia, Article 35
   - Regulation (EU) 2025/327 on the European Health Data Space
   - Case law on Article 35 in AI uses is thin
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Explanations confirmed (FRA reproduction); Regulation (EU) 2025/327 confirmed."
   status: DRAFT
   verified_by: ""
   verified_on: ""
@@ -531,8 +551,9 @@ rights:
     violated; a fair and public hearing within a reasonable time by an independent and impartial
     tribunal; legal aid where needed.
   echr: >-
-    Articles 13 and 6(1) ECHR. Article 47 is broader: the remedy is before a tribunal, and the
-    fair-trial guarantees are not limited to civil rights and criminal charges.
+    The first paragraph is based on Article 13 ECHR, with more extensive protection in Union law: the
+    remedy is before a court. The second paragraph corresponds to Article 6(1) ECHR, but in Union law the
+    right to a fair hearing is not confined to disputes relating to civil law rights and obligations.
   regime: Qualified, under Article 52(1).
   essence: >-
     Legislation giving no possibility of pursuing legal remedies to obtain access to, rectification
@@ -549,8 +570,9 @@ rights:
   - Explanations, Article 47
   - FRA Charterpedia, Article 47
   - Schrems, C-362/14 (2015)
-  - ZZ, C-300/11 (2013)
-  - Ligue des droits humains, C-817/19 (2022)
+  - ZZ, C-300/11 (2013), disclosure of the essence of the grounds where State security is invoked; its reach beyond free movement is debated
+  - Ligue des droits humains, C-817/19 (2022), self-learning systems too opaque to allow an effective remedy (paras 194–195)
+  source_check: "Checked 18 November 2026 without access to EUR-Lex, CURIA or HUDOC. Explanations confirmed in structure (FRA reproduction); Schrems para. 95, ZZ and Ligue des droits humains paras. 194–195 confirmed in secondary sources."
   status: DRAFT
   verified_by: ""
   verified_on: ""

@@ -602,6 +602,7 @@ class RightCard(_Spec):
     questions: list[NonEmpty]
     sources: list[NonEmpty]
     status: Literal["DRAFT", "VERIFIED"]
+    source_check: str = ""  # what was checked against which sources, and what is still open
     verified_by: str = ""
     verified_on: str = ""
 
