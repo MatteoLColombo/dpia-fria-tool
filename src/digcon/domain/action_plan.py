@@ -127,7 +127,7 @@ def fingerprint(state, rule_id):
     item = data.pop('action_plan', {}).get(rule_id, {})
     for key in ['reviewed_fingerprint', 'decision', 'review_history', 'shared_action_id', 'shared_history']:
         item.pop(key, None)
-    for key in ['governance', 'api_suggestions', 'assessment_id', 'residual_reviews', 'argument']:
+    for key in ['governance', 'api_suggestions', 'api_risk_suggestions', 'assessment_id', 'residual_reviews', 'argument']:
         data.pop(key, None)
     data['action'] = item
     return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()

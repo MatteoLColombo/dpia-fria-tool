@@ -620,6 +620,7 @@
     }
   },
   "api_suggestions": {},
+  "api_risk_suggestions": {},
   "human_gates": {
     "RMS-9I": {
       "rule_id": "RMS-9I",

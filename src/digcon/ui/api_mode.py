@@ -1,4 +1,4 @@
-"""API mode: the OpenAI interpreter fills the reviewer checks (3.3), for invited sessions only.
+"""API mode: the OpenAI interpreter fills the reviewer checks (3.3) and suggests risks (3.2), for invited sessions only.
 
 A session is in API mode only when all of these hold:
   * the master switch DIGCON_API_ENABLED is true in the Streamlit secrets;
@@ -10,6 +10,10 @@ In API mode the interpreter runs when 3.3 or 4.1 is opened, only for reviewer-ch
 stops) whose answers changed since the API last saw them. A value a person sets always wins, and a value
 a person clears is not filled again in that session. DIGCON_API_DAILY_CALLS caps the calls of all
 sessions together (default 300 a day), to protect the credit.
+
+In 3.2 the API suggests, for each catalogue risk not yet rated by a person, whether it applies and a first
+rating of its four initial dimensions. A suggestion stays outside the register until a person uses it;
+a dismissed suggestion is not made again for that assessment.
 """
 
 from __future__ import annotations
@@ -30,9 +34,11 @@ ACTIVE = "api_mode"
 DISMISSED = "api_dismissed"  # element ids a person has set or cleared: the API leaves them alone
 TRIED = "api_tried"  # rule id -> input digest already sent in this session (no retry loops)
 STATUS = "api_status"  # last run summary, shown in 3.3 / 4.1
+RISK_TRIED = "api_risk_tried"  # risk id -> input digest already sent in this session
+RISK_STATUS = "api_risk_status"  # last 3.2 run summary
 # What the API saw, and what a person cleared, belongs to one assessment: a load or a discard starts
 # over, otherwise reloading the same file would never be sent again. ACTIVE (the private link) stays.
-state.PER_ASSESSMENT_KEYS.update({DISMISSED, TRIED, STATUS})
+state.PER_ASSESSMENT_KEYS.update({DISMISSED, TRIED, STATUS, RISK_TRIED, RISK_STATUS})
 DEFAULT_DAILY_CALLS = 300
 
 
@@ -242,3 +248,122 @@ def notice() -> None:
         st.caption("The daily limit for automatic checks is reached: the remaining checks stay to be verified.")
     elif status.get("failed"):
         st.caption(f"{status['failed']} automatic checks failed: those checks stay to be verified.")
+
+
+# -- 3.2: risk suggestions ----------------------------------------------------------------
+
+RISK_DIMENSIONS = ("scale", "scope", "reversibility", "probability")
+
+
+def _rated_by_person(entry) -> bool:
+    return entry is not None and all(getattr(entry, d) is not None for d in RISK_DIMENSIONS)
+
+
+def _risk_todo(cfg: ConfigBundle, current, suggester, visible) -> list[str]:
+    """Catalogue risks to send: not rated by a person, not dismissed, some linked answer given, inputs changed."""
+    from digcon.domain.enums import ApiRiskDecision
+
+    tried = st.session_state.setdefault(RISK_TRIED, {})
+    out = []
+    for spec in cfg.risks.risks:
+        previous = current.api_risk_suggestions.get(spec.id)
+        if previous is not None and previous.decision is ApiRiskDecision.DISMISSED:
+            continue
+        if _rated_by_person(current.risks.get(spec.id)):
+            continue
+        request = suggester.request_for(current, spec, visible)
+        if not suggester.worth_sending(request):
+            continue
+        digest = suggester.digest(request)
+        if previous is not None and previous.provenance.endswith(f"input {digest}"):
+            continue
+        if tried.get(spec.id) != digest:
+            out.append(spec.id)
+            tried[spec.id] = digest
+    return out
+
+
+def refresh_risks(cfg: ConfigBundle) -> bool:
+    """Suggest risks whose linked answers changed (3.2). Returns True when a suggestion was added or replaced."""
+    if not active():
+        return False
+    try:
+        return _refresh_risks(cfg)
+    except Exception as exc:  # the deterministic tool carries on
+        st.session_state[RISK_STATUS] = {"limit": False, "set": 0, "failed": 1, "error": f"{type(exc).__name__}"}
+        return False
+
+
+def _refresh_risks(cfg: ConfigBundle) -> bool:
+    from digcon.interpret.risk_suggestions import RiskSuggester
+
+    current = state.assessment()
+    suggester = RiskSuggester(_interpreter(cfg))
+    visible = suggester.interp.visible_questions(current)
+    todo = _risk_todo(cfg, current, suggester, visible)
+    if not todo:
+        return False
+    wanted = len(todo)
+    granted = _reserve(wanted)
+    if granted < wanted:  # the ones not sent may go next time the cap allows
+        for rid in todo[granted:]:
+            st.session_state[RISK_TRIED].pop(rid, None)
+    todo = todo[:granted]
+    if not todo:
+        st.session_state[RISK_STATUS] = {"limit": True, "set": 0, "failed": 0}
+        return False
+    with st.spinner(f"Reading {len(todo)} catalogue risks with the API…"):
+        suggestions = suggester.suggest(current, todo, visible)
+    bucket = state.store().setdefault("api_risk_suggestions", {})
+    for sug in suggestions:
+        bucket[sug.risk_id] = sug.model_dump(mode="json")
+    failed = sum(1 for c in suggester.calls if c.error or c.rejected)
+    st.session_state[RISK_STATUS] = {"limit": granted < wanted, "set": len(suggestions), "failed": failed}
+    return bool(suggestions)
+
+
+def use_risk(risk_id: str) -> None:
+    """A person takes the API's suggestion: the risk enters the register with the suggested initial ratings,
+    which are theirs from then on (a dimension the API left open stays as it was)."""
+    sug = state.store().get("api_risk_suggestions", {}).get(risk_id)
+    if not sug or sug.get("relevance") != "RELEVANT":
+        return
+    entry = dict(state.store()["risks"].get(risk_id) or {"risk_id": risk_id})
+    for dim in RISK_DIMENSIONS:
+        if sug.get(dim) is not None:
+            entry[dim] = sug[dim]
+    state.store()["risks"][risk_id] = entry
+    sug["decision"] = "ACCEPTED"
+    for key in [k for k in st.session_state if str(k).startswith(f"w.risk.{risk_id}.")]:
+        del st.session_state[key]  # the widgets reseed from the register
+
+
+def dismiss_risk(risk_id: str) -> None:
+    """A person sets the suggestion aside: it stays on record, and this risk is not suggested again."""
+    sug = state.store().get("api_risk_suggestions", {}).get(risk_id)
+    if sug:
+        sug["decision"] = "DISMISSED"
+
+
+def pending_risks() -> list[str]:
+    """Relevant risks the API suggested that no person has used or dismissed yet."""
+    return sorted(r for r, s in state.store().get("api_risk_suggestions", {}).items()
+                  if s.get("relevance") == "RELEVANT" and s.get("decision") == "PENDING")
+
+
+def risk_notice() -> None:
+    """On 3.2: suggestions to review, and a short note when the API could not do its job."""
+    waiting = pending_risks()
+    if waiting:
+        n = len(waiting)
+        st.markdown(f":violet-badge[{n} API risk suggestion{'s' if n != 1 else ''} to review] "
+                    ":gray[Not in the register until you use them: " + ", ".join(waiting) + ".]")
+    if not active():
+        return
+    status = st.session_state.get(RISK_STATUS) or {}
+    if status.get("error"):
+        st.caption(f"Some risks could not be read automatically ({status['error']}).")
+    elif status.get("limit"):
+        st.caption("The daily limit for automatic checks is reached: some risks were not read.")
+    elif status.get("failed"):
+        st.caption(f"{status['failed']} automatic risk readings failed or were rejected.")

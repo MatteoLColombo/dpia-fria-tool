@@ -574,6 +574,7 @@
     }
   },
   "api_suggestions": {},
+  "api_risk_suggestions": {},
   "human_gates": {
     "HS05": {
       "rule_id": "HS05",

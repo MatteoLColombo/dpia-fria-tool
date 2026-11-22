@@ -8,7 +8,7 @@ from digcon.domain.enums import Probability, Reversibility, RuleEffect, Scale, S
 from digcon.domain.models import ConfigBundle
 from digcon.engine import EngineResult
 
-from .. import state
+from .. import api_mode, state
 
 DIMENSIONS = (("scale", Scale), ("scope", Scope), ("reversibility", Reversibility), ("probability", Probability))
 
@@ -62,6 +62,37 @@ def suggestions(cfg: ConfigBundle, result: EngineResult) -> dict[str, list[str]]
     return out
 
 
+_RELEVANCE_TEXT = {"RELEVANT": "Relevant to this case", "NOT_RELEVANT": "Not relevant to this case",
+                   "UNCERTAIN": "Unclear from the answers"}
+
+
+def _api_box(rid: str) -> None:
+    """The API's suggestion for this risk (3.2), with what a person did with it."""
+    sug = state.store().get("api_risk_suggestions", {}).get(rid)
+    if not sug:
+        return
+    decision = sug.get("decision")
+    ratings = " · ".join(f"{dim.capitalize()} {label(enum[sug[dim]])}" for dim, enum in DIMENSIONS if sug.get(dim))
+    cited = ", ".join(r.removeprefix("answer:") for r in sug.get("evidence_refs", [])) or "none"
+    if decision != "PENDING":
+        note = "you used it" if decision == "ACCEPTED" else "you dismissed it"
+        st.caption(f":gray[The API suggested: {_RELEVANCE_TEXT[sug['relevance']]}"
+                   f"{' (' + ratings + ')' if ratings else ''}; {note}.]")
+        return
+    with st.container(border=True):
+        st.markdown(f":violet-badge[Suggested by API] **{_RELEVANCE_TEXT[sug['relevance']]}**"
+                    + (f"  \nInitial: {ratings}" if ratings else ""))
+        st.caption(f"{sug.get('rationale') or ''} Cited: {cited}. Not in the register until you use it; "
+                   "check each rating against your evidence.")
+        with st.container(horizontal=True, gap="small"):
+            if sug["relevance"] == "RELEVANT":
+                st.button("Use", key=f"api.risk.use.{rid}", icon=":material/check:", on_click=api_mode.use_risk,
+                          args=(rid,), help="Include this risk with the suggested initial ratings; they become yours.")
+            st.button("Dismiss", key=f"api.risk.dismiss.{rid}", icon=":material/close:",
+                      on_click=api_mode.dismiss_risk, args=(rid,),
+                      help="Set the suggestion aside; this risk will not be suggested again.")
+
+
 def render(cfg: ConfigBundle, result: EngineResult) -> None:
     st.markdown(
         "Include the risks relevant to this case **from the DIGCON catalogue** and rate them; new risks cannot be "
@@ -90,8 +121,13 @@ def render(cfg: ConfigBundle, result: EngineResult) -> None:
             f" :gray-badge[Residual {label(rr.residual) if rr.residual else '—'}]" if rr else ""
         )
         hint = " :blue-badge[Suggested]" if spec.id in suggested and spec.id not in in_register else ""
+        api_sug = state.store().get("api_risk_suggestions", {}).get(spec.id) or {}
+        api_pending = api_sug.get("decision") == "PENDING" and api_sug.get("relevance") == "RELEVANT"
+        if api_pending:
+            hint += " :violet-badge[API: relevant]"
         title = f"{spec.id}{' (' + spec.label + ')' if spec.label else ''} — {spec.right.split(';')[0][:90]}{level}{hint}"
-        with st.expander(title, expanded=bool(stored)):
+        with st.expander(title, expanded=bool(stored) or api_pending):
+            _api_box(spec.id)
             key = f"w.risk.{spec.id}.include"
             state.seed(key, bool(stored))
             st.checkbox("Include in this assessment", key=key, on_change=_sync, args=(spec.id,))

@@ -256,6 +256,20 @@ def build(cfg: ConfigBundle, state: AssessmentState, result: EngineResult) -> st
     else:
         add("No risk included.")
         add("")
+    if state.api_risk_suggestions:
+        add("### API risk suggestions")
+        add("")
+        rows = []
+        for rid, sug in state.api_risk_suggestions.items():
+            rows.append([
+                rid, _v(sug.relevance),
+                " / ".join(_v(getattr(sug, d)) for d in ("scale", "scope", "reversibility", "probability")),
+                _v(sug.decision), sug.rationale, ", ".join(r.removeprefix("answer:") for r in sug.evidence_refs),
+            ])
+        out.extend(_table(["Risk", "API suggested", "Scale / scope / reversibility / probability", "Person",
+                           "API reason", "Cited"], rows))
+        add("Suggestions count only once a person uses them in the register.")
+        add("")
 
     out.extend(_argument(cfg, state, positions))
     add("## 8. Legal and procedural checks")

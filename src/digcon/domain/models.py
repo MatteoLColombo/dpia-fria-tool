@@ -22,6 +22,8 @@ from .enums import (
     AnswerKind,
     AnswerState,
     ApiReview,
+    ApiRiskDecision,
+    RiskRelevance,
     DecisionEffect,
     ElementSource,
     EncodingKind,
@@ -719,6 +721,24 @@ class ApiSuggestion(_State):
     provenance: NonEmpty  # provider, model, prompt and schema versions, input digest
 
 
+class ApiRiskSuggestion(_State):
+    """What the API proposed for one catalogue risk in 3.2 (initial dimensions only, never residual).
+
+    It is not part of the register: it counts nowhere until a person copies it in (ACCEPTED).
+    """
+
+    risk_id: RiskId
+    relevance: RiskRelevance
+    scale: Scale | None = None
+    scope: Scope | None = None
+    reversibility: Reversibility | None = None
+    probability: Probability | None = None
+    evidence_refs: list[NonEmpty] = []
+    rationale: str | None = None
+    provenance: NonEmpty  # provider, model, prompt and schema versions, input digest
+    decision: ApiRiskDecision = ApiRiskDecision.PENDING
+
+
 class HumanGateRecord(_State):
     rule_id: RuleId
     gate: HumanGate
@@ -879,6 +899,7 @@ class AssessmentState(_State):
     answers: dict[QuestionId, Answer] = {}
     elements: dict[ElementId, ElementEvaluation] = {}
     api_suggestions: dict[ElementId, ApiSuggestion] = {}
+    api_risk_suggestions: dict[RiskId, ApiRiskSuggestion] = {}
     human_gates: dict[RuleId, HumanGateRecord] = {}
     risks: dict[RiskId, RiskAssessment] = {}
     mitigations: dict[MitigationId, MitigationRecord] = {}
@@ -895,6 +916,7 @@ class AssessmentState(_State):
             *((k, v, "question_id") for k, v in self.answers.items()),
             *((k, v, "element_id") for k, v in self.elements.items()),
             *((k, v, "element_id") for k, v in self.api_suggestions.items()),
+            *((k, v, "risk_id") for k, v in self.api_risk_suggestions.items()),
             *((k, v, "rule_id") for k, v in self.human_gates.items()),
             *((k, v, "risk_id") for k, v in self.risks.items()),
             *((k, v, "mitigation_id") for k, v in self.mitigations.items()),

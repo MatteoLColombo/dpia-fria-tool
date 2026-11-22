@@ -304,6 +304,22 @@ class ApiReview(_Closed):
     CLEARED = "CLEARED"  # a person set it back to not evaluated
 
 
+class RiskRelevance(_Closed):
+    """API suggestion in 3.2: does a catalogue risk apply to this case (a suggestion, never a selection)."""
+
+    RELEVANT = "RELEVANT"
+    NOT_RELEVANT = "NOT_RELEVANT"
+    UNCERTAIN = "UNCERTAIN"
+
+
+class ApiRiskDecision(_Closed):
+    """What a person did with an API risk suggestion in 3.2."""
+
+    PENDING = "PENDING"  # not reviewed: it is not in the register and counts nowhere
+    ACCEPTED = "ACCEPTED"  # a person copied it into the register; the values are theirs from then on
+    DISMISSED = "DISMISSED"  # a person set it aside; the API does not suggest this risk again
+
+
 class ElementSource(_Closed):
     """Where a rule element's state comes from."""
 

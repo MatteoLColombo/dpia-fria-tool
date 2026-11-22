@@ -288,6 +288,8 @@ def main() -> None:
     api_mode.activate_from_link()
     if st.session_state.get(NAV) in (RULES_TITLE, RESULT_TITLE) and api_mode.refresh(cfg):
         st.rerun()  # the next run autosaves the values the API just set
+    if st.session_state.get(NAV) == RISKS_TITLE and api_mode.refresh_risks(cfg):
+        st.rerun()  # the next run autosaves the suggestions the API just made
     try:
         res = run_engine(
             cfg,
@@ -322,6 +324,8 @@ def main() -> None:
         st.markdown(STEP_TEXT[step])
     if current in (RULES_TITLE, RESULT_TITLE):
         api_mode.notice()
+    if current == RISKS_TITLE:
+        api_mode.risk_notice()
     if res is not None or current == START_TITLE:
         sections[current](cfg, res)
     _pager(titles, current)

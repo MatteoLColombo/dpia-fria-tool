@@ -671,6 +671,7 @@
     }
   },
   "api_suggestions": {},
+  "api_risk_suggestions": {},
   "human_gates": {},
   "risks": {
     "RISK-21": {
