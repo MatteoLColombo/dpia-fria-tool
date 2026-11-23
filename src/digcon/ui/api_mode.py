@@ -156,6 +156,15 @@ def _todo(cfg: ConfigBundle, current, interp) -> list[tuple[str, list, str]]:
     return out
 
 
+def _first_problem(calls) -> str | None:
+    """The first error or rejection of a run, short, for the note in 3.2 / 3.3 (no secrets: OpenAI masks keys)."""
+    for c in calls:
+        text = c.error or (c.rejected[0] if c.rejected else None)
+        if text:
+            return text if len(text) <= 240 else text[:237] + "…"
+    return None
+
+
 def refresh(cfg: ConfigBundle) -> bool:
     """Fill the reviewer checks whose answers changed. Call before the engine runs.
 
@@ -166,7 +175,7 @@ def refresh(cfg: ConfigBundle) -> bool:
     try:
         return _refresh(cfg)
     except Exception as exc:  # invalid assessment, missing package, network: the deterministic tool carries on
-        st.session_state[STATUS] = {"limit": False, "set": 0, "failed": 1, "rules": 0, "error": f"{type(exc).__name__}"}
+        st.session_state[STATUS] = {"limit": False, "set": 0, "failed": 1, "rules": 0, "error": f"{type(exc).__name__}: {str(exc)[:200]}"}
         return False
 
 
@@ -196,6 +205,7 @@ def _refresh(cfg: ConfigBundle) -> bool:
         st.session_state.pop(f"w.{ev.element_id}", None)  # the widget reseeds from the store
     failed = sum(1 for c in interp.calls if c.error)
     st.session_state[STATUS] = {"limit": granted < wanted, "set": len(evaluations), "failed": failed,
+                                "detail": _first_problem(interp.calls),
                                 "rules": len(todo)}
     return bool(evaluations)
 
@@ -247,7 +257,8 @@ def notice() -> None:
     elif status.get("limit"):
         st.caption("The daily limit for automatic checks is reached: the remaining checks stay to be verified.")
     elif status.get("failed"):
-        st.caption(f"{status['failed']} automatic checks failed: those checks stay to be verified.")
+        st.caption(f"{status['failed']} automatic checks failed: those checks stay to be verified."
+                   + (f" First reason: {status['detail']}" if status.get("detail") else ""))
 
 
 # -- 3.2: risk suggestions ----------------------------------------------------------------
@@ -290,7 +301,7 @@ def refresh_risks(cfg: ConfigBundle) -> bool:
     try:
         return _refresh_risks(cfg)
     except Exception as exc:  # the deterministic tool carries on
-        st.session_state[RISK_STATUS] = {"limit": False, "set": 0, "failed": 1, "error": f"{type(exc).__name__}"}
+        st.session_state[RISK_STATUS] = {"limit": False, "set": 0, "failed": 1, "error": f"{type(exc).__name__}: {str(exc)[:200]}"}
         return False
 
 
@@ -318,7 +329,8 @@ def _refresh_risks(cfg: ConfigBundle) -> bool:
     for sug in suggestions:
         bucket[sug.risk_id] = sug.model_dump(mode="json")
     failed = sum(1 for c in suggester.calls if c.error or c.rejected)
-    st.session_state[RISK_STATUS] = {"limit": granted < wanted, "set": len(suggestions), "failed": failed}
+    st.session_state[RISK_STATUS] = {"limit": granted < wanted, "set": len(suggestions), "failed": failed,
+                                     "detail": _first_problem(suggester.calls)}
     return bool(suggestions)
 
 
@@ -366,4 +378,5 @@ def risk_notice() -> None:
     elif status.get("limit"):
         st.caption("The daily limit for automatic checks is reached: some risks were not read.")
     elif status.get("failed"):
-        st.caption(f"{status['failed']} automatic risk readings failed or were rejected.")
+        st.caption(f"{status['failed']} automatic risk readings failed or were rejected."
+                   + (f" First reason: {status['detail']}" if status.get("detail") else ""))

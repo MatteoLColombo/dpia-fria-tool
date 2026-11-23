@@ -184,3 +184,16 @@ def test_the_request_carries_only_the_risk_s_own_answers_and_the_context():
     schema = suggester.schema_for(req)
     assert "RESIDUAL" not in json.dumps(schema).upper()
     assert schema["properties"]["scale"]["enum"] == ["LOW", "MEDIUM", "HIGH", "VERY_HIGH", "UNCERTAIN"]
+
+
+def test_a_failed_call_shows_its_reason(monkeypatch):
+    api_mode._counter.clear()
+
+    class Broken:
+        def create(self, **kwargs):
+            raise RuntimeError("Error code: 401 - expired_secret_key")
+
+    monkeypatch.setattr(api_mode, "make_client", lambda: SimpleNamespace(responses=Broken()))
+    at = app()
+    captions = " ".join(c.value for c in at.caption)
+    assert "First reason: RuntimeError: Error code: 401 - expired_secret_key" in captions
