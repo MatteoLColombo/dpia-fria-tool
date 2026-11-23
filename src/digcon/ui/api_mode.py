@@ -193,20 +193,22 @@ def _refresh(cfg: ConfigBundle) -> bool:
     if not todo:
         st.session_state[STATUS] = {"limit": True, "set": 0, "failed": 0, "rules": 0}
         return False
+    # Everything is stored inside the spinner block: a rerun requested meanwhile (e.g. the browser autosave)
+    # stops the script at its next Streamlit call, and results kept only after that would be lost.
     with st.spinner(f"Checking {len(todo)} reviewer checks with the API…"):
         evaluations = interp.evaluate(current, [e for _, els, _ in todo for e in els])
-    tried = st.session_state.setdefault(TRIED, {})
-    for rule_id, _, digest in todo:
-        tried[rule_id] = digest
-    updated = apply_evaluations(current, evaluations).model_dump(mode="json")
-    state.store()["elements"] = updated["elements"]
-    state.store()["api_suggestions"] = updated["api_suggestions"]
-    for ev in evaluations:
-        st.session_state.pop(f"w.{ev.element_id}", None)  # the widget reseeds from the store
-    failed = sum(1 for c in interp.calls if c.error)
-    st.session_state[STATUS] = {"limit": granted < wanted, "set": len(evaluations), "failed": failed,
-                                "detail": _first_problem(interp.calls),
-                                "rules": len(todo)}
+        updated = apply_evaluations(current, evaluations).model_dump(mode="json")
+        state.store()["elements"] = updated["elements"]
+        state.store()["api_suggestions"] = updated["api_suggestions"]
+        for ev in evaluations:
+            st.session_state.pop(f"w.{ev.element_id}", None)  # the widget reseeds from the store
+        tried = st.session_state.setdefault(TRIED, {})
+        for rule_id, _, digest in todo:
+            tried[rule_id] = digest
+        failed = sum(1 for c in interp.calls if c.error)
+        st.session_state[STATUS] = {"limit": granted < wanted, "set": len(evaluations), "failed": failed,
+                                    "detail": _first_problem(interp.calls),
+                                    "rules": len(todo)}
     return bool(evaluations)
 
 
@@ -270,7 +272,7 @@ def _rated_by_person(entry) -> bool:
     return entry is not None and all(getattr(entry, d) is not None for d in RISK_DIMENSIONS)
 
 
-def _risk_todo(cfg: ConfigBundle, current, suggester, visible) -> list[str]:
+def _risk_todo(cfg: ConfigBundle, current, suggester, visible) -> list[tuple[str, str]]:
     """Catalogue risks to send: not rated by a person, not dismissed, some linked answer given, inputs changed."""
     from digcon.domain.enums import ApiRiskDecision
 
@@ -289,8 +291,7 @@ def _risk_todo(cfg: ConfigBundle, current, suggester, visible) -> list[str]:
         if previous is not None and previous.provenance.endswith(f"input {digest}"):
             continue
         if tried.get(spec.id) != digest:
-            out.append(spec.id)
-            tried[spec.id] = digest
+            out.append((spec.id, digest))
     return out
 
 
@@ -316,21 +317,22 @@ def _refresh_risks(cfg: ConfigBundle) -> bool:
         return False
     wanted = len(todo)
     granted = _reserve(wanted)
-    if granted < wanted:  # the ones not sent may go next time the cap allows
-        for rid in todo[granted:]:
-            st.session_state[RISK_TRIED].pop(rid, None)
-    todo = todo[:granted]
+    todo = todo[:granted]  # the ones not sent may go next time the cap allows
     if not todo:
         st.session_state[RISK_STATUS] = {"limit": True, "set": 0, "failed": 0}
         return False
+    # Stored inside the spinner block, and marked as sent only once answered: see _refresh.
     with st.spinner(f"Reading {len(todo)} catalogue risks with the API…"):
-        suggestions = suggester.suggest(current, todo, visible)
-    bucket = state.store().setdefault("api_risk_suggestions", {})
-    for sug in suggestions:
-        bucket[sug.risk_id] = sug.model_dump(mode="json")
-    failed = sum(1 for c in suggester.calls if c.error or c.rejected)
-    st.session_state[RISK_STATUS] = {"limit": granted < wanted, "set": len(suggestions), "failed": failed,
-                                     "detail": _first_problem(suggester.calls)}
+        suggestions = suggester.suggest(current, [rid for rid, _ in todo], visible)
+        bucket = state.store().setdefault("api_risk_suggestions", {})
+        for sug in suggestions:
+            bucket[sug.risk_id] = sug.model_dump(mode="json")
+        tried = st.session_state.setdefault(RISK_TRIED, {})
+        for rid, digest in todo:
+            tried[rid] = digest
+        failed = sum(1 for c in suggester.calls if c.error or c.rejected)
+        st.session_state[RISK_STATUS] = {"limit": granted < wanted, "set": len(suggestions), "failed": failed,
+                                         "detail": _first_problem(suggester.calls)}
     return bool(suggestions)
 
 
